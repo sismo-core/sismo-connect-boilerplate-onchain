@@ -1,0 +1,26 @@
+.main {
+  margin: 30vh auto 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 750px;
+}
+
+.disconnect{
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  width: 120px;
+  margin-top: 0;
+}
+
+.error {
+  border: 1px solid red;
+  padding: 12px;
+  border-radius: 5px;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: red;
+  margin: 0 auto;
+}

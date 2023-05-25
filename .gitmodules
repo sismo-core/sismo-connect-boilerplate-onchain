@@ -1,0 +1,9 @@
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/sismo-connect-packages"]
+	path = lib/sismo-connect-packages
+	url = https://github.com/sismo-core/sismo-connect-packages
