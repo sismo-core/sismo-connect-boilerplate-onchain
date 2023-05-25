@@ -1,0 +1,247 @@
+body {
+  margin: 0;
+  font-family: Roboto-Medium, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: linear-gradient(285.51deg, #193970 -75.32%, #12203d 76.45%);
+  color: #ffffff;
+}
+
+p {
+  margin: 0px;
+  color: white;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0px;
+  padding: 0px;
+  font-family: "Roboto-Medium";
+}
+
+h1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: center;
+}
+
+h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+h3 {
+  font-size: 20px;
+  margin-bottom: 5px;
+  color: white;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+ul {
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  list-style: none;
+  padding: 15px;
+  border-radius: 10px;
+  width: 500px;
+  height: 150px;
+  cursor: pointer;
+
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+li:hover {
+  border: 1px solid rgba(255, 255, 255, 1);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+li:active {
+  transform: translate(1px, 1px);
+}
+
+li:before {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: #12203d;
+  background-color: white;
+  width: 100px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+}
+
+li:nth-child(1):before {
+  content: "level 0";
+}
+
+li:nth-child(2):before {
+  content: "level 1";
+}
+
+li:nth-child(3):before {
+  content: "level 2";
+}
+
+li:after {
+  position: absolute;
+  content: "→";
+  bottom: 15px;
+  right: 20px;
+  font-size: 25px;
+  font-weight: 600;
+  transition: transform 0.1s ease-in-out;
+}
+
+li:hover:after {
+  transform: translate(5px, 0px);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+label {
+  font-size: 20px;
+  font-family: "Roboto-Medium";
+  color: white;
+}
+
+input {
+  width: 500px;
+  height: 53px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0 10px;
+  font-size: 20px;
+  font-family: "Roboto-Regular";
+  margin-bottom: 10px;
+  color: white;
+  background-color: transparent;
+}
+
+input:focus {
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 1);
+}
+
+.back-button {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  font-family: "Roboto-Medium";
+  font-size: 16px;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  gap: 10px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 700px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+
+  width: 700px;
+  padding: 20px;
+  border: 1px solid white;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.wallet-button{
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: #000;
+  background-color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 7.5px 0;
+}
+
+.wallet-button--disconnect {
+  position: absolute;
+  top: 50px;
+  right: 50px;
+}
+
+@font-face {
+  font-family: "Roboto-Light";
+  src: local("Roboto"), url(../../public/fonts/Roboto-Light.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto-Medium";
+  src: local("Roboto"), url(../../public/fonts/Roboto-Medium.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto-Regular";
+  src: local("Roboto"), url(../../public/fonts/Roboto-Regular.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Roboto-Bold";
+  src: local("Roboto"), url(../../public/fonts/Roboto-Bold.ttf) format("truetype");
+}
