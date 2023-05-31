@@ -1,95 +1,218 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+
+import Image from "next/image";
+import styles from "./page.module.css";
+import { use, useEffect, useState } from "react";
+import {
+  useAccount,
+  useConnect,
+  useContractWrite,
+  useNetwork,
+  usePrepareContractWrite,
+  useSwitchNetwork,
+} from "wagmi";
+import {
+  AuthType,
+  ClaimType,
+  SismoConnectButton,
+  SismoConnectClientConfig,
+} from "@sismo-core/sismo-connect-react";
+import { errorsABI, signMessage } from "@/utils/misc";
+import { sismoConnectConfig } from "@/utils/sismo";
+import { fundMyAccount, mumbaiFork } from "@/utils/wagmi";
+import { abi as AirdropABI } from "../../../abi/Airdrop.json";
+import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
+import { waitForTransactionReceipt } from "viem/dist/types/actions/public/waitForTransactionReceipt";
+import { waitForTransaction } from "@wagmi/core";
 
 export default function Home() {
+  const { isConnected, address } = useAccount();
+  const { connect, connectors, isLoading } = useConnect();
+  const { chain } = useNetwork();
+  const { switchNetworkAsync } = useSwitchNetwork();
+
+  const [responseBytes, setResponseBytes] = useState<string>("");
+  const [claimsStatus, setClaimsStatus] = useState<
+    "idle" | "loading" | "success" | "error" | "already-claimed"
+  >("idle");
+
+  const { config, error } = usePrepareContractWrite({
+    address: transactions[0].contractAddress as any,
+    abi: [...AirdropABI, ...errorsABI],
+    functionName: "claimWithSismo",
+    args: [responseBytes],
+  });
+
+  useEffect(() => {
+    if (!error) return;
+    if (error?.message?.includes("AlreadyClaimed()")) {
+      setClaimsStatus("already-claimed");
+    }
+  }, [error]);
+
+  const { writeAsync } = useContractWrite(config);
+
+  useEffect(() => {
+    if (!address) return;
+    fundMyAccount(address);
+  }, [address]);
+
+  async function onAirdropClaim() {
+    setClaimsStatus("loading");
+
+    try {
+      if (chain?.id !== mumbaiFork.id) {
+        await switchNetworkAsync?.(mumbaiFork.id);
+      }
+      const tx = await writeAsync?.();
+      console.log(tx);
+      const txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
+
+      if (txReceipt?.status === "success") {
+        setClaimsStatus("success");
+        console.log("success");
+      } else {
+        throw new Error("Transaction failed");
+      }
+    } catch (e) {
+      console.log(e);
+      setClaimsStatus("error");
+    }
+  }
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+      <h1>
+        <b> Boilerplate</b>
+        <br />
+        Sismo Connect onchain
+      </h1>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
+      {!isConnected && (
+        <>
           <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
+            This is a simple ERC20 gated airdrop example using Sismo Connect.
+            <br />
+            <br />
+            To be eligible to the airdrop, you will prove in a privacy preserving manner that you:
           </p>
-        </a>
-      </div>
+          <ul>
+            <li>have gitcoin passport with a score above 15,</li>
+            <li>are part of the Sismo Contributors group.</li>
+          </ul>
+          <br />
+          <p>
+            Additionally, if you are following Sismo on Lens or that you have voted on the Sismo DAO
+            on Snapshot, you will get an additional airdrop of 100 tokens per claim.
+          </p>
+
+          <button
+            disabled={!connectors[0].ready || isLoading}
+            onClick={() => connect({ connector: connectors[0] })}
+          >
+            {!isLoading ? "Connect wallet" : "Connecting..."}
+          </button>
+        </>
+      )}
+
+      {isConnected && !responseBytes && (
+        <>
+          <p>Using Sismo Connect we will protect our airdrop from:</p>
+          <br />
+          <br />
+          <ul>
+            <li>Double-spending: each user has a unique Vault id derived from your app id.</li>
+            <li>Front-running: the airdrop destination address is sent as signature request</li>
+            <li>
+              Sybil-resistance attack: proving a unique gitcoin passport with a score above 15
+            </li>
+            <li>Gated: airdrop is only available for Sismo Contributors</li>
+          </ul>
+          <br />
+          <p>
+            <b>Chain: Local Fork Mumbai</b>
+            <br />
+            <b>Your airdrop destination address is: {address}</b>
+          </p>
+
+          <SismoConnectButton
+            // the client config created
+            config={sismoConnectConfig}
+            // the auth request we want to make
+            // here we want the proof of a Sismo Vault ownership from our users
+            auths={[{ authType: AuthType.VAULT }]}
+            claims={[
+              // we ask the user to prove that he has a gitcoin passport with a score above 15
+              // https://factory.sismo.io/groups-explorer?search=0x1cde61966decb8600dfd0749bd371f12
+              {
+                groupId: "0x1cde61966decb8600dfd0749bd371f12",
+                claimType: ClaimType.GTE,
+                value: 15,
+              },
+              // we ask the user to prove that he is part of the Sismo Contributors group and selectively prove its level
+              // https://factory.sismo.io/groups-explorer?search=0xe9ed316946d3d98dfcd829a53ec9822e
+              { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e", isSelectableByUser: true },
+              // we optionally ask the user to prove that he is following Sismo on Lens
+              // https://factory.sismo.io/groups-explorer?search=0xabf3ea8c23ff96893ac5caf4d2fa7c1f
+              { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f", isOptional: true },
+            ]}
+            // we ask the user to sign a message
+            // it will be used onchain to prevent front running
+            signature={{ message: signMessage(address) }}
+            // onResponseBytes calls a 'setResponse' function with the responseBytes returned by the Sismo Vault
+            onResponseBytes={(responseBytes: string) => setResponseBytes(responseBytes)}
+            // Some text to display on the button
+            text={"Claim with Sismo"}
+          />
+        </>
+      )}
+
+      {isConnected &&
+        responseBytes &&
+        (claimsStatus === "idle" || claimsStatus === "loading" || claimsStatus === "error") && (
+          <>
+            <p>Using Sismo Connect we will protect our airdrop from:</p>
+            <br />
+            <br />
+
+            <ul>
+              <li>Double-spending: each user has a unique Vault id derived from your app id.</li>
+              <li>Front-running: the airdrop destination address is sent as signature request</li>
+              <li>
+                Sybil-resistance attack: proving a unique gitcoin passport with a score above 15
+              </li>
+              <li>Gated: airdrop is only available for Sismo Contributors</li>
+            </ul>
+            <br />
+            <p>
+              <b>Chain: Local Fork Mumbai</b>
+              <br />
+              <b>Your airdrop destination address is: {address}</b>
+            </p>
+
+            <button
+              disabled={claimsStatus === "loading"}
+              onClick={() => {
+                onAirdropClaim();
+              }}
+            >
+              {claimsStatus !== "loading" ? "Claim" : "Claiming..."}
+            </button>
+            {claimsStatus === "error" && <p>An error has occurred during your transaction</p>}
+          </>
+        )}
+
+      {isConnected && responseBytes && claimsStatus === "success" && (
+        <>
+          <p>Congratulations!</p>
+        </>
+      )}
+
+      {isConnected && responseBytes && claimsStatus === "already-claimed" && (
+        <>
+          <p>Already claimed</p>
+        </>
+      )}
     </main>
-  )
+  );
 }

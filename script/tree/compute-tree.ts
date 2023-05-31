@@ -1,5 +1,5 @@
+import { devGroups } from "../../front/src/utils/sismo";
 import { KVMerkleTree, MerkleTreeData, SNARK_FIELD, buildPoseidon } from "@sismo-core/hydra-s2";
-import { devGroups } from "../../front/src/config";
 import { exec } from "child_process";
 import { encodePacked, stringToHex, toHex } from "viem";
 
