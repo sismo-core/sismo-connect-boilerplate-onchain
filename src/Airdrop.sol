@@ -14,7 +14,9 @@ contract Airdrop is
   ERC20,
   SismoConnect // <--- add a Sismo Connect inheritance
 {
+  error AlreadyClaimed();
   using SismoConnectHelper for SismoConnectVerifiedResult;
+  mapping (address => uint) public claimed;
 
   bytes16 public constant APP_ID = 0xf4977993e52606cfd67b7a1cde717069; // <--- add your appId as a constant
 
@@ -27,6 +29,11 @@ contract Airdrop is
   {}
 
   function claimWithSismo(bytes memory response) public {
+    // we check if the user has already claimed
+    if (claimed[msg.sender] != 0) {
+      revert AlreadyClaimed();
+    }
+
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
       // we want the user to prove that he owns a Sismo Vault

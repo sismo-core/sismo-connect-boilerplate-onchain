@@ -1,6 +1,6 @@
-# Sismo Connect - Onchain Sample Project Repository
+# Sismo Connect - Onchain Boilerplate Repository
 
-This repository aims at providing simple examples on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
+This repository aims at providing a simple examples on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
 
 ## Usage
 
