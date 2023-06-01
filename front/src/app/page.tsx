@@ -6,6 +6,7 @@ import { use, useEffect, useState } from "react";
 import {
   useAccount,
   useConnect,
+  useContractEvent,
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
@@ -22,8 +23,8 @@ import { sismoConnectConfig } from "@/utils/sismo";
 import { fundMyAccount, mumbaiFork } from "@/utils/wagmi";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
-import { waitForTransactionReceipt } from "viem/dist/types/actions/public/waitForTransactionReceipt";
 import { waitForTransaction } from "@wagmi/core";
+import { decodeEventLog } from "viem";
 
 export default function Home() {
   const { isConnected, address } = useAccount();
@@ -36,22 +37,30 @@ export default function Home() {
     "idle" | "loading" | "success" | "error" | "already-claimed"
   >("idle");
 
-  const { config, error } = usePrepareContractWrite({
-    address: transactions[0].contractAddress as any,
-    abi: [...AirdropABI, ...errorsABI],
-    functionName: "claimWithSismo",
-    args: [responseBytes],
+  const [txSummary, setTxSummary] = useState({
+    txHash: "",
+    destinationAddress: "",
+    amount: "",
   });
 
-  useEffect(() => {
-    if (!error) return;
-    if (error?.message?.includes("AlreadyClaimed()")) {
-      setClaimsStatus("already-claimed");
-    }
-  }, [error]);
+  const { config, error: prepareContractWriteError } = usePrepareContractWrite({
+    address: transactions[0].contractAddress as `0x${string}}`,
+    abi: [...AirdropABI, ...errorsABI],
+    functionName: "claimWithSismo",
+    args: [],
+  });
 
   const { writeAsync } = useContractWrite(config);
 
+  // Check if user has already claimed the airdrop using viem simulate call on usePrepareContractWrite
+  useEffect(() => {
+    if (!prepareContractWriteError) return;
+    if (prepareContractWriteError?.message?.includes("AlreadyClaimed()")) {
+      setClaimsStatus("already-claimed");
+    }
+  }, [prepareContractWriteError]);
+
+  // Fund my connected account on mumbai fork
   useEffect(() => {
     if (!address) return;
     fundMyAccount(address);
@@ -61,16 +70,35 @@ export default function Home() {
     setClaimsStatus("loading");
 
     try {
+      // Switch to mumbai fork if not already on it
       if (chain?.id !== mumbaiFork.id) {
         await switchNetworkAsync?.(mumbaiFork.id);
       }
+
+      // Send the transaction
       const tx = await writeAsync?.();
-      console.log(tx);
+
+      // Wait for the transaction to be mined
       const txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
 
+      // If the transaction was successful, decode the event log to get the airdrop summary
       if (txReceipt?.status === "success") {
+
+        const event = decodeEventLog({
+          abi: [...AirdropABI, ...errorsABI],
+          data: txReceipt.logs[0]?.data,
+          topics: txReceipt.logs[0]?.topics,
+        });
+
+        if (event?.args) {
+          setTxSummary({
+            txHash: txReceipt.transactionHash,
+            destinationAddress: (event.args as any).to,
+            amount: (event.args as any).value,
+          });
+        }
+
         setClaimsStatus("success");
-        console.log("success");
       } else {
         throw new Error("Transaction failed");
       }
@@ -90,12 +118,12 @@ export default function Home() {
 
       {!isConnected && (
         <>
+          <p>This is a simple ERC20 gated airdrop example using Sismo Connect.</p>
+          <br />
           <p>
-            This is a simple ERC20 gated airdrop example using Sismo Connect.
-            <br />
-            <br />
             To be eligible to the airdrop, you will prove in a privacy preserving manner that you:
           </p>
+          <br />
           <ul>
             <li>have gitcoin passport with a score above 15,</li>
             <li>are part of the Sismo Contributors group.</li>

@@ -56,12 +56,12 @@ contract Airdrop is ERC20, SismoConnect {
   }
 
   function claimWithSismo(bytes memory response) public {
-    uint256 airdropAmount = 20;
+    uint256 airdropAmount = 20 * 10 ** decimals();
 
     ClaimRequest[] memory claims = new ClaimRequest[](3);
     claims[0] = buildClaim({groupId: GITCOIN_PASSPORT_GROUP_ID, claimType: ClaimType.GTE, value: 15});
-    claims[1] = buildClaim({groupId: SISMO_CONTRIBUTORS_GROUP_ID});
-    claims[2] = buildClaim({groupId: SISMO_SNAPSHOT_VOTERS});
+    claims[1] = buildClaim({groupId: SISMO_CONTRIBUTORS_GROUP_ID, isSelectableByUser: true, isOptional: false});
+    claims[2] = buildClaim({groupId: SISMO_SNAPSHOT_VOTERS, isSelectableByUser: false, isOptional: true});
 
     AuthRequest[] memory auths = new AuthRequest[](1);
     auths[0] = buildAuth({authType: AuthType.VAULT});

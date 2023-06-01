@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-http-header-size=24576' next dev -p 3000 & nodemon --watch src/config.ts --watch ../src/Airdrop.sol --exec 'yarn compute-tree && yarn deploy-airdrop && sleep 4 && ./script/log.sh'",
+    "dev": "NODE_OPTIONS='--max-http-header-size=24576' next dev -p 3000 & nodemon --watch src/utils/sismo.ts --watch ../src/Airdrop.sol --exec 'yarn compute-tree && yarn deploy-airdrop && sleep 4 && ./script/log.sh'",
     "build": "next build",
     "start": "NODE_OPTIONS='--max-http-header-size=24576' next start",
     "lint": "next lint",
