@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createWalletClient, http, parseEther } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import { Chain, configureChains, createConfig } from "wagmi";
 import { WagmiConfig } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { publicProvider } from "wagmi/providers/public";
-import { fetchBalance } from "@wagmi/core";
 
 export const mumbaiFork = {
   id: 5151111,
@@ -82,25 +79,4 @@ export const switchNetwork = async (userChain: Chain) => {
       console.log(error);
     }
   }
-};
-
-export const publicWalletClient = createWalletClient({
-  chain: mumbaiFork,
-  transport: http(),
-  // The private key of the second account of the local anvil network
-  // This account is used for the app to allow the user to have fake tokens to call the contract
-  account: privateKeyToAccount(
-    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-  ),
-});
-
-export const fundMyAccount = async (address: `0x${string}`) => {
-  if (!address) return;
-  const balance = await fetchBalance({ address });
-
-  balance.value < parseEther("5") &&
-    (await publicWalletClient.sendTransaction({
-      to: address,
-      value: parseEther("5"),
-    }))
 };

@@ -1,36 +1,18 @@
 import {
-  Chain,
-  PublicClient,
-  WalletClient,
-  createPublicClient,
   createWalletClient,
   encodeAbiParameters,
   http,
+  parseEther,
 } from "viem";
-import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { privateKeyToAccount } from "viem/accounts";
 import { mumbaiFork } from "./wagmi";
+import { fetchBalance } from "@wagmi/core";
 
 declare global {
   interface Window {
     ethereum?: any;
   }
 }
-
-
-export const signMessage = (address: `0x${string}` | undefined) => {
-  return encodeAbiParameters(
-    [{ type: "address", name: "airdropAddress" }],
-    [address as `0x${string}`]
-  );
-};
-
-export const getPublicClient = (userChain: Chain): PublicClient => {
-  return createPublicClient({
-    chain: userChain,
-    transport: http(),
-  });
-};
 
 export const publicWalletClient = createWalletClient({
   chain: mumbaiFork,
@@ -42,66 +24,29 @@ export const publicWalletClient = createWalletClient({
   ),
 });
 
+export const fundMyAccount = async (address: `0x${string}`) => {
+  if (!address) return;
+  const balance = await fetchBalance({ address });
 
-export function handleVerifyErrors(e: any): any {
-  // else if the tx is invalid, we show an error message
-  // it is either because the proof is invalid or because the user already claimed the airdrop
-  console.log("error", { ...(e as object) });
-  console.log("metaMessages", (e as { metaMessages: string[] }).metaMessages);
-  console.log("e.shortMessage", (e as { shortMessage: string })?.shortMessage ?? "");
-  let returnedError: string[] = (e as { metaMessages: string[] }).metaMessages;
+  balance.value < parseEther("5") &&
+    (await publicWalletClient.sendTransaction({
+      to: address,
+      value: parseEther("5"),
+    }))
+};
 
-  if ((e as { metaMessages: string[] }).metaMessages) {
-    // isolate the name of the error
-    const error = (e as { metaMessages: string[] }).metaMessages[0].split("(")[0];
-    const args = (e as { metaMessages: string[] }).metaMessages[1]
-      // take the arguments between the parentheses
-      .split("(")[1]
-      .split(")")[0]
-      // take each argument separated by a comma
-      .split(",");
-    console.log("args", args);
-    console.log("error", error);
+export const signMessage = (address: `0x${string}` | undefined) => {
+  return encodeAbiParameters(
+    [{ type: "address", name: "airdropAddress" }],
+    [address as `0x${string}`]
+  );
+};
 
-    if (error === "Error: AppIdMismatch") {
-      returnedError = [
-        "AppId in the client config (" +
-          args[0] +
-          ") does not match the one in the contract (" +
-          args[1] +
-          ").",
-      ];
-    }
-    if (error === "Error: RegistryRootNotAvailable") {
-      returnedError = [
-        "Registry root " +
-          args[0] +
-          " not available. Check that you did not forget to add the devGroup to the Sismo Connect client config.",
-      ];
-    }
-  }
+export const formatError = (error: Error | null) => {
+  if(!error) return "";
+  return error?.message?.split("args:")?.[0]?.split("data:")?.[0]?.trim() || "";
+};
 
-  if ((e as { shortMessage: string })?.shortMessage === "User rejected the request.") {
-    returnedError = ["User rejected the request."];
-  }
-
-  if (
-    (e as { shortMessage: string }).shortMessage ===
-      'The contract function "claimWithSismo" reverted with the following reason:\nERC721: transfer caller is not owner nor approved' ||
-    (e as { shortMessage: string }).shortMessage ===
-      'The contract function "claimWithSismo" reverted with the following reason:\nERC721: token already minted'
-  ) {
-    returnedError = ["Airdrop already claimed!"];
-  }
-
-  if (returnedError?.length === 0) {
-    returnedError = ["An error occured"];
-  }
-
-  // if the error is an array of strings, we return the first two elements of the array
-  // else we return the error
-  return returnedError.length === 1 ? returnedError[0] : returnedError.slice(0, 2);
-}
 
 // ABI of all the errors that can be thrown by the contract inheriting Sismo Connect
 export const errorsABI = [

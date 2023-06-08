@@ -83,6 +83,100 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "vaultId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "indexed": true,
+        "internalType": "struct AuthRequest[]",
+        "name": "auths",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ClaimRequest[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "Verify",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "ADDRESSES_PROVIDER",
     "outputs": [

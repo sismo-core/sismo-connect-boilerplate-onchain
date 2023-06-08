@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+//import "forge-std/src/console.sol";
 import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 
 /*
@@ -13,6 +14,7 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
  */
 contract Airdrop is ERC20, SismoConnect {
   error AlreadyClaimed();
+  event Verify(uint256 indexed vaultId, AuthRequest[] indexed auths, ClaimRequest[]);
   using SismoConnectHelper for SismoConnectVerifiedResult;
   mapping(uint256 => bool) public claimed;
 
@@ -34,7 +36,7 @@ contract Airdrop is ERC20, SismoConnect {
   ) private pure returns (uint256) {
     // user will gain 100 tokens for each verified claim apart from the Sismo Contributor Claim where the user will gain 100 tokens per level of contribution in th Sismo community.
 
-    uint256 airdropAmount = 0;
+    uint256 airdropAmount = 20;
     VerifiedClaim memory sismoContributorClaim;
 
     // we first need to find the Sismo Contributor Claim in the list of claims
@@ -56,7 +58,7 @@ contract Airdrop is ERC20, SismoConnect {
   }
 
   function claimWithSismo(bytes memory response) public {
-    uint256 airdropAmount = 20 * 10 ** decimals();
+    uint256 airdropAmount = 2000 * 10 ** decimals();
 
     ClaimRequest[] memory claims = new ClaimRequest[](3);
     claims[0] = buildClaim({groupId: GITCOIN_PASSPORT_GROUP_ID, claimType: ClaimType.GTE, value: 15});
@@ -80,6 +82,7 @@ contract Airdrop is ERC20, SismoConnect {
 
     // if the proofs and signed message are valid, we take the userId from the verified result
     // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request), the anonymous identifier of a user's vault for a specific app --> vaultId = hash(userVaultSecret, appId)
+    //console.log(result);
     uint256 vaultId = result.getUserId(AuthType.VAULT);
 
     // we check if the user has already claimed the airdrop

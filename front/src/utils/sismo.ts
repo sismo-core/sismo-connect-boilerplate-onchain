@@ -55,3 +55,4 @@ export const sismoConnectConfig: SismoConnectClientConfig = {
     devGroups,
   },
 };
+
