@@ -14,10 +14,6 @@ body {
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
   color: white;
   background: black;
 }
@@ -39,9 +35,7 @@ ul {
 
 
 button {
-  margin: 0 auto;
-  margin-top: 32px;
-
+  margin: 32px auto;
   background: white;
   width: 250px;
   height: 50px;

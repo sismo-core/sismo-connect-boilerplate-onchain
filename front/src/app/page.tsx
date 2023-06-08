@@ -22,20 +22,25 @@ import {
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { errorsABI, formatError, fundMyAccount, signMessage } from "@/utils/misc";
-import { mumbaiFork } from "@/utils/wagmi";
 
-/* ***********************  Application states *************************** */
+/* ***********************  Sismo Connect Config *************************** */
 const sismoConnectConfig: SismoConnectClientConfig & {
-  vault: {
+  vault?: {
     impersonate: string[];
   };
 } = {
   appId: "0xf4977993e52606cfd67b7a1cde717069",
-  vault: {
-    impersonate: ["0x5fd15ef419c907717362fa82b8c364a3959f2bac", "github:leosayous21"],
+  devMode: {
+    enabled: true,
+    displayRawResponse: false,
   },
+  // vault: {
+  //   impersonate: ["0x5fd15ef419c907717362fa82b8c364a3959f2bac", "github:leosayous21"],
+  // },
   vaultAppBaseUrl: "https://staging.dev.vault-beta.sismo.io",
 };
+
+const CHAIN_ID = 5151111;
 
 export default function Home() {
   /* ***********************  Application states *************************** */
@@ -73,18 +78,16 @@ export default function Home() {
     setLoading(true);
     try {
       // Switch to mumbai fork if not already on it
-      if (chain?.id !== mumbaiFork.id) {
-        await switchNetworkAsync?.(mumbaiFork.id);
-      }
+      if (chain?.id !== CHAIN_ID) await switchNetworkAsync?.(CHAIN_ID);
       const tx = await writeAsync?.();
       const txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
       if (txReceipt?.status === "success") {
-        const event = decodeEventLog({
+        const mintEvent = decodeEventLog({
           abi: AirdropABI,
           data: txReceipt.logs[0]?.data,
           topics: txReceipt.logs[0]?.topics,
         });
-        const args = event?.args as {
+        const args = mintEvent?.args as {
           value: string;
         };
         const ethAmount = formatEther(BigInt(args.value));
@@ -102,6 +105,17 @@ export default function Home() {
     if (!address) return;
     fundMyAccount(address);
   }, [address]);
+
+  /* *************************  Reset state **************************** */
+  function resetApp() {
+    disconnect();
+    setAmountClaimed("");
+    setResponseBytes("");
+    setError("");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("sismoConnectResponseCompressed");
+    window.history.replaceState({}, "", url.toString());
+  }
 
   return (
     <>
@@ -159,16 +173,19 @@ export default function Home() {
                 },
                 // we ask the user to prove that he is part of the Sismo Contributors group and selectively prove its level
                 // https://factory.sismo.io/groups-explorer?search=0xe9ed316946d3d98dfcd829a53ec9822e
-                { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e", isSelectableByUser: true },
+                { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e", isSelectableByUser: true},
                 // we optionally ask the user to prove that he is following Sismo on Lens
                 // https://factory.sismo.io/groups-explorer?search=0xabf3ea8c23ff96893ac5caf4d2fa7c1f
-                { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f", isOptional: true },
+                { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f", isOptional: true},
               ]}
               // we ask the user to sign a message
               // it will be used onchain to prevent front running
               signature={{ message: signMessage(address) }}
               // onResponseBytes calls a 'setResponse' function with the responseBytes returned by the Sismo Vault
-              onResponseBytes={(responseBytes: string) => setResponseBytes(responseBytes)}
+              onResponseBytes={(responseBytes: string) => {
+                console.log("responseBytes", responseBytes);
+                setResponseBytes(responseBytes);
+              }}
               // Some text to display on the button
               text={"Claim with Sismo"}
             />
@@ -191,15 +208,19 @@ export default function Home() {
         {isConnected && responseBytes && amountClaimed && (
           <>
             <p>Congratulations!</p>
-            <p>You have claimed {amountClaimed} tokens</p>
+            <p>
+              You have claimed {amountClaimed} tokens on {address}.
+            </p>
           </>
         )}
-        {isConnected && error && <p className={styles.error}>{error}</p>}
+        {isConnected && responseBytes && !amountClaimed && error && (
+          <p className={styles.error}>{error}</p>
+        )}
       </main>
 
       {isConnected && (
-        <button className={styles.disconnect} onClick={() => disconnect()}>
-          Disconnect wallet
+        <button className={styles.disconnect} onClick={() => resetApp()}>
+          Reset
         </button>
       )}
     </>

@@ -1,4 +1,4 @@
-import { DevGroup, SismoConnectClientConfig } from "@sismo-core/sismo-connect-react";
+import { DevGroup } from "@sismo-core/sismo-connect-react";
 
 ///////////////////
 
@@ -46,13 +46,4 @@ export const devGroups = [
     },
   },
 ] as DevGroup[];
-
-
-export const sismoConnectConfig: SismoConnectClientConfig = {
-  appId: "0xf4977993e52606cfd67b7a1cde717069",
-  devMode: {
-    enabled: true,
-    devGroups,
-  },
-};
 

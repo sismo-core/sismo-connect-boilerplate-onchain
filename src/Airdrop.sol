@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-//import "forge-std/src/console.sol";
+import "forge-std/console.sol";
 import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 
 /*
@@ -14,7 +14,6 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
  */
 contract Airdrop is ERC20, SismoConnect {
   error AlreadyClaimed();
-  event Verify(uint256 indexed vaultId, AuthRequest[] indexed auths, ClaimRequest[]);
   using SismoConnectHelper for SismoConnectVerifiedResult;
   mapping(uint256 => bool) public claimed;
 
@@ -36,7 +35,7 @@ contract Airdrop is ERC20, SismoConnect {
   ) private pure returns (uint256) {
     // user will gain 100 tokens for each verified claim apart from the Sismo Contributor Claim where the user will gain 100 tokens per level of contribution in th Sismo community.
 
-    uint256 airdropAmount = 20;
+    uint256 airdropAmount = 0;
     VerifiedClaim memory sismoContributorClaim;
 
     // we first need to find the Sismo Contributor Claim in the list of claims
@@ -49,25 +48,36 @@ contract Airdrop is ERC20, SismoConnect {
 
     // if the user has a Sismo Contributor Claim, we add the airdrop amount based on the value of the claim
     if (sismoContributorClaim.value > 0) {
-      airdropAmount += sismoContributorClaim.value * 100;
+      airdropAmount += sismoContributorClaim.value * 100 * 10 ** 18;
     }
 
     // for the other airdrops we just need to check the number of claims to calculate the remaining airdrop amount minus 1 (since the user already claimed the Sismo Contributor airdrop)
-    airdropAmount += (result.claims.length - 1) * 100;
+    airdropAmount += (result.claims.length - 1) * 100 * 10 ** 18;
     return airdropAmount;
   }
 
   function claimWithSismo(bytes memory response) public {
-    uint256 airdropAmount = 2000 * 10 ** decimals();
+    //uint256 airdropAmount = 2000 * 10 ** decimals();
 
     ClaimRequest[] memory claims = new ClaimRequest[](3);
-    claims[0] = buildClaim({groupId: GITCOIN_PASSPORT_GROUP_ID, claimType: ClaimType.GTE, value: 15});
-    claims[1] = buildClaim({groupId: SISMO_CONTRIBUTORS_GROUP_ID, isSelectableByUser: true, isOptional: false});
-    claims[2] = buildClaim({groupId: SISMO_SNAPSHOT_VOTERS, isSelectableByUser: false, isOptional: true});
+    claims[0] = buildClaim({
+      groupId: GITCOIN_PASSPORT_GROUP_ID,
+      claimType: ClaimType.GTE,
+      value: 15
+    });
+    claims[1] = buildClaim({
+      groupId: SISMO_CONTRIBUTORS_GROUP_ID,
+      isSelectableByUser: true,
+      isOptional: false
+    });
+    claims[2] = buildClaim({
+      groupId: SISMO_SNAPSHOT_VOTERS,
+      isSelectableByUser: false,
+      isOptional: true
+    });
 
     AuthRequest[] memory auths = new AuthRequest[](1);
     auths[0] = buildAuth({authType: AuthType.VAULT});
-
 
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
@@ -82,7 +92,7 @@ contract Airdrop is ERC20, SismoConnect {
 
     // if the proofs and signed message are valid, we take the userId from the verified result
     // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request), the anonymous identifier of a user's vault for a specific app --> vaultId = hash(userVaultSecret, appId)
-    //console.log(result);
+
     uint256 vaultId = result.getUserId(AuthType.VAULT);
 
     // we check if the user has already claimed the airdrop
@@ -91,12 +101,16 @@ contract Airdrop is ERC20, SismoConnect {
     }
 
     //we get the airdrop amount from the verified result based on the number of claims and auths that were verified
-    //uint256 airdropAmount = _getRewardAmount(result);
+    uint256 airdropAmount = _getRewardAmount(result);
 
     // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
     claimed[vaultId] = true;
 
     // we mint the token to the user
     _mint(msg.sender, airdropAmount);
+  }
+
+  function test() public view {
+    console.log("test");
   }
 }
