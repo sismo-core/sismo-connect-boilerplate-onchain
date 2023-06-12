@@ -22,6 +22,7 @@ import {
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { errorsABI, formatError, fundMyAccount, signMessage } from "@/utils/misc";
+import { devGroups } from "@/utils/sismo";
 
 /* ***********************  Sismo Connect Config *************************** */
 const sismoConnectConfig: SismoConnectClientConfig & {
@@ -33,10 +34,8 @@ const sismoConnectConfig: SismoConnectClientConfig & {
   devMode: {
     enabled: true,
     displayRawResponse: false,
+    devGroups: devGroups,
   },
-  // vault: {
-  //   impersonate: ["0x5fd15ef419c907717362fa82b8c364a3959f2bac", "github:leosayous21"],
-  // },
   vaultAppBaseUrl: "https://staging.dev.vault-beta.sismo.io",
 };
 
@@ -152,7 +151,7 @@ export default function Home() {
             </ul>
             <br />
             <p>
-              <b>Chain: Local Fork Mumbai</b>
+              <b>Chain: {chain?.name}</b>
               <br />
               <b>Your airdrop destination address is: {address}</b>
             </p>
@@ -194,7 +193,7 @@ export default function Home() {
 
         {isConnected && responseBytes && !amountClaimed && (
           <>
-            <p>Chain: Local Fork Mumbai</p>
+            <p>Chain: {chain?.name}</p>
             <p>Your airdrop destination address is: {address}</p>
             <button
               disabled={loading || Boolean(wagmiSimulateError)}

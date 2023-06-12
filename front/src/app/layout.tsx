@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Boilerplate - Sismo Connect onchain",
-  description: "//",
+  description:"A simple ERC20 gated airdrop example using Sismo Connect",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
