@@ -17,7 +17,7 @@ import {
   AuthType,
   ClaimType,
   SismoConnectButton,
-  SismoConnectClientConfig,
+  SismoConnectConfig,
 } from "@sismo-core/sismo-connect-react";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
@@ -25,7 +25,7 @@ import { errorsABI, formatError, fundMyAccount, signMessage } from "@/utils/misc
 import { mumbaiFork } from "@/utils/wagmi";
 
 /* ***********************  Application states *************************** */
-const sismoConnectConfig: SismoConnectClientConfig & {
+const sismoConnectConfig: SismoConnectConfig & {
   vault: {
     impersonate: string[];
   };
@@ -43,6 +43,8 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [amountClaimed, setAmountClaimed] = useState<string>("");
   const [responseBytes, setResponseBytes] = useState<string>("");
+
+  console.log("responseBytes", responseBytes);
 
   /* ***************  Wagmi hooks for wallet connection ******************** */
   const { connect, connectors, isLoading } = useConnect();
@@ -159,10 +161,10 @@ export default function Home() {
                 },
                 // we ask the user to prove that he is part of the Sismo Contributors group and selectively prove its level
                 // https://factory.sismo.io/groups-explorer?search=0xe9ed316946d3d98dfcd829a53ec9822e
-                { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e", isSelectableByUser: true },
+                { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e" },
                 // we optionally ask the user to prove that he is following Sismo on Lens
                 // https://factory.sismo.io/groups-explorer?search=0xabf3ea8c23ff96893ac5caf4d2fa7c1f
-                { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f", isOptional: true },
+                // { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f" },
               ]}
               // we ask the user to sign a message
               // it will be used onchain to prevent front running

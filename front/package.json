@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-http-header-size=24576' next dev -p 3000 & nodemon --watch src/utils/sismo.ts --watch ../src/Airdrop.sol --exec 'yarn compute-tree && yarn deploy-airdrop && sleep 4 && ./script/log.sh'",
+    "dev": "NODE_OPTIONS='--max-http-header-size=24576' next dev -p 3000",
     "build": "next build",
     "start": "NODE_OPTIONS='--max-http-header-size=24576' next start",
     "lint": "next lint",
@@ -12,7 +12,7 @@
     "deploy-airdrop": "forge script DeployAirdrop --rpc-url http://localhost:8545 -vv --mnemonics 'test test test test test test test test test test test junk' --sender '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' --broadcast &&  ./script/generate-abi-from-front.sh"
   },
   "dependencies": {
-    "@sismo-core/sismo-connect-react": "^0.0.13",
+    "@sismo-core/sismo-connect-react": "^0.0.14-beta.9",
     "@types/node": "20.2.3",
     "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",
