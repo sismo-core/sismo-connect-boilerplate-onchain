@@ -1,6 +1,6 @@
 # Sismo Connect - Onchain Boilerplate Repository
 
-This repository aims at providing a simple examples on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
+This repository aims at providing a simple example on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
 
 ## Usage
 
@@ -13,8 +13,8 @@ This repository aims at providing a simple examples on how to integrate Sismo Co
 ### Clone the repository
 
 ```bash
-git clone https://github.com/sismo-core/sismo-connect-onchain-tutorial
-cd sismo-connect-onchain-tutorial
+git clone https://github.com/sismo-core/sismo-connect-boilerplate-onchain
+cd sismo-connect-boilerplate-onchain
 yarn
 ```
 
