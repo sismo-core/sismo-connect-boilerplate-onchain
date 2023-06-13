@@ -170,15 +170,18 @@ export default function Home() {
                   claimType: ClaimType.GTE,
                   value: 15,
                 },
-                // we ask the user to prove that he is part of the Sismo Contributors group and selectively prove its level
-                // https://factory.sismo.io/groups-explorer?search=0xe9ed316946d3d98dfcd829a53ec9822e
-                { groupId: "0xe9ed316946d3d98dfcd829a53ec9822e", isSelectableByUser: true},
+                // we ask the user to prove that he is part of the Sismo Community group and selectively prove its level
+                // https://factory.sismo.io/groups-explorer?search=0xd630aa769278cacde879c5c0fe5d203c
+                { groupId: "0xd630aa769278cacde879c5c0fe5d203c", isSelectableByUser: true },
                 // we optionally ask the user to prove that he is following Sismo on Lens
-                // https://factory.sismo.io/groups-explorer?search=0xabf3ea8c23ff96893ac5caf4d2fa7c1f
-                { groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f", isOptional: true},
+                // https://factory.sismo.io/groups-explorer?search=0x29a90aaa3cf9431020c040a6c674efd3
+                { groupId: "0x29a90aaa3cf9431020c040a6c674efd3", isOptional: true },
+                // we optionally ask the user to prove that he has voted on the Sismo Snapshot Space
+                // https://factory.sismo.io/groups-explorer?search=0x45418b1a35d370469c0338116fdc1001
+                { groupId: "0x45418b1a35d370469c0338116fdc1001", isOptional: true },
               ]}
               // we ask the user to sign a message
-              // it will be used onchain to prevent front running
+              // it will be used onchain to prevent frontrunning
               signature={{ message: signMessage(address) }}
               // onResponseBytes calls a 'setResponse' function with the responseBytes returned by the Sismo Vault
               onResponseBytes={(responseBytes: string) => {

@@ -22,8 +22,8 @@ export const devGroups = [
     },
   },
   {
-    // Sismo Contributors group : https://factory.sismo.io/groups-explorer?search=0xe9ed316946d3d98dfcd829a53ec9822e
-    groupId: "0xe9ed316946d3d98dfcd829a53ec9822e",
+    // Sismo Community group : https://factory.sismo.io/groups-explorer?search=0xd630aa769278cacde879c5c0fe5d203c
+    groupId: "0xd630aa769278cacde879c5c0fe5d203c",
     // data can also be an object with the address as key and the score as value
     data: {
       // your address is added here so you can test the airdrops
@@ -34,8 +34,20 @@ export const devGroups = [
     },
   },
   {
-    // Sismo Lens Followers group : https://factory.sismo.io/groups-explorer?search=0xabf3ea8c23ff96893ac5caf4d2fa7c1f
-    groupId: "0xabf3ea8c23ff96893ac5caf4d2fa7c1f",
+    // Sismo Lens Followers group : https://factory.sismo.io/groups-explorer?search=0x29a90aaa3cf9431020c040a6c674efd3
+    groupId: "0x29a90aaa3cf9431020c040a6c674efd3",
+    // data can also be an object with the address as key and the score as value
+    data: {
+      // your address is added here so you can test the airdrops
+      [yourAddress]: 1,
+      "0x2b9b9846d7298e0272c61669a54f0e602aba6290": 1,
+      "0xb01ee322c4f028b8a6bfcd2a5d48107dc5bc99ec": 1,
+      "0x938f169352008d35e065F153be53b3D3C07Bcd90": 1,
+    },
+  },
+  {
+    // Sismo Snapshot Voters group : https://factory.sismo.io/groups-explorer?search=0x45418b1a35d370469c0338116fdc1001
+    groupId: "0x45418b1a35d370469c0338116fdc1001",
     // data can also be an object with the address as key and the score as value
     data: {
       // your address is added here so you can test the airdrops
@@ -46,4 +58,3 @@ export const devGroups = [
     },
   },
 ] as DevGroup[];
-

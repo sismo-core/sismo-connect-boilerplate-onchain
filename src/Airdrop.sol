@@ -8,7 +8,7 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 /*
  * @title Airdrop
  * @author Sismo
- * @dev Simple Airdrop contract that mints a token to the msg.sender
+ * @dev Simple Airdrop contract that mints ERC20 tokens to the msg.sender
  * This contract is used for tutorial purposes only
  * It will be used to demonstrate how to integrate Sismo Connect
  */
@@ -19,8 +19,9 @@ contract Airdrop is ERC20, SismoConnect {
 
   bytes16 public constant APP_ID = 0xf4977993e52606cfd67b7a1cde717069;
   bytes16 public constant GITCOIN_PASSPORT_GROUP_ID = 0x1cde61966decb8600dfd0749bd371f12;
-  bytes16 public constant SISMO_CONTRIBUTORS_GROUP_ID = 0xe9ed316946d3d98dfcd829a53ec9822e;
-  bytes16 public constant SISMO_SNAPSHOT_VOTERS = 0xabf3ea8c23ff96893ac5caf4d2fa7c1f;
+  bytes16 public constant SISMO_COMMUNITY_GROUP_ID = 0xd630aa769278cacde879c5c0fe5d203c;
+  bytes16 public constant SISMO_LENS_FOLLOWERS = 0x29a90aaa3cf9431020c040a6c674efd3;
+  bytes16 public constant SISMO_SNAPSHOT_VOTERS = 0x45418b1a35d370469c0338116fdc1001;
 
   constructor(
     string memory name,
@@ -33,25 +34,25 @@ contract Airdrop is ERC20, SismoConnect {
   function _getRewardAmount(
     SismoConnectVerifiedResult memory result
   ) private pure returns (uint256) {
-    // user will gain 100 tokens for each verified claim apart from the Sismo Contributor Claim where the user will gain 100 tokens per level of contribution in th Sismo community.
+    // user will gain 100 tokens for each verified dataGem apart from the Sismo Community DataGem where the user will gain 100 tokens per level of contribution in th Sismo community.
 
     uint256 airdropAmount = 0;
     VerifiedClaim memory sismoContributorClaim;
 
-    // we first need to find the Sismo Contributor Claim in the list of claims
+    // we first need to find the Sismo Community DataGem in the list of dataGems
     for (uint i = 0; i < result.claims.length; i++) {
-      if (result.claims[i].groupId == SISMO_CONTRIBUTORS_GROUP_ID) {
+      if (result.claims[i].groupId == SISMO_COMMUNITY_GROUP_ID) {
         sismoContributorClaim = result.claims[i];
         break;
       }
     }
 
-    // if the user has a Sismo Contributor Claim, we add the airdrop amount based on the value of the claim
+    // if the user has a Sismo Community DataGem, we add the airdrop amount based on the value of the dataGem
     if (sismoContributorClaim.value > 0) {
       airdropAmount += sismoContributorClaim.value * 100 * 10 ** 18;
     }
 
-    // for the other airdrops we just need to check the number of claims to calculate the remaining airdrop amount minus 1 (since the user already claimed the Sismo Contributor airdrop)
+    // for the other airdrops we just need to check the number of dataGems to calculate the remaining airdrop amount minus 1 (since the user already claimed the Sismo Community airdrop)
     airdropAmount += (result.claims.length - 1) * 100 * 10 ** 18;
     return airdropAmount;
   }
@@ -59,18 +60,23 @@ contract Airdrop is ERC20, SismoConnect {
   function claimWithSismo(bytes memory response) public {
     //uint256 airdropAmount = 2000 * 10 ** decimals();
 
-    ClaimRequest[] memory claims = new ClaimRequest[](3);
+    ClaimRequest[] memory claims = new ClaimRequest[](4);
     claims[0] = buildClaim({
       groupId: GITCOIN_PASSPORT_GROUP_ID,
       claimType: ClaimType.GTE,
       value: 15
     });
     claims[1] = buildClaim({
-      groupId: SISMO_CONTRIBUTORS_GROUP_ID,
+      groupId: SISMO_COMMUNITY_GROUP_ID,
       isSelectableByUser: true,
       isOptional: false
     });
     claims[2] = buildClaim({
+      groupId: SISMO_LENS_FOLLOWERS,
+      isSelectableByUser: false,
+      isOptional: true
+    });
+    claims[3] = buildClaim({
       groupId: SISMO_SNAPSHOT_VOTERS,
       isSelectableByUser: false,
       isOptional: true
@@ -106,11 +112,7 @@ contract Airdrop is ERC20, SismoConnect {
     // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
     claimed[vaultId] = true;
 
-    // we mint the token to the user
+    // we mint the tokens to the user
     _mint(msg.sender, airdropAmount);
-  }
-
-  function test() public view {
-    console.log("test");
   }
 }

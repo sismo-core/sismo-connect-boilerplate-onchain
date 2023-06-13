@@ -123,6 +123,19 @@
   },
   {
     "inputs": [],
+    "name": "SISMO_COMMUNITY_GROUP_ID",
+    "outputs": [
+      {
+        "internalType": "bytes16",
+        "name": "",
+        "type": "bytes16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "SISMO_CONNECT_LIB_VERSION",
     "outputs": [
       {
@@ -136,7 +149,7 @@
   },
   {
     "inputs": [],
-    "name": "SISMO_CONTRIBUTORS_GROUP_ID",
+    "name": "SISMO_LENS_FOLLOWERS",
     "outputs": [
       {
         "internalType": "bytes16",
@@ -520,13 +533,6 @@
         "type": "string"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "test",
-    "outputs": [],
     "stateMutability": "view",
     "type": "function"
   },
