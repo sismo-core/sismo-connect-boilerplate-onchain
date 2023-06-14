@@ -56,12 +56,17 @@ export default function Home() {
   const { switchNetworkAsync } = useSwitchNetwork();
 
   /* *************  Wagmi hooks for contract interaction ******************* */
-  const { config, error: wagmiSimulateError } = usePrepareContractWrite({
-    address: transactions[0].contractAddress as `0x${string}}`,
-    abi: [...AirdropABI, ...errorsABI],
-    functionName: "claimWithSismo",
-    args: [responseBytes],
-  });
+
+  const contractCallInputs = responseBytes
+    ? {
+        address: transactions[0].contractAddress as `0x${string}}`,
+        abi: [...AirdropABI, ...errorsABI],
+        functionName: "claimWithSismo",
+        args: [responseBytes],
+      }
+    : {};
+
+  const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
   const { writeAsync } = useContractWrite(config);
 
   /* *************  Handle simulateContract call errors ******************** */
