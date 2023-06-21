@@ -2,6 +2,8 @@ import styled from "styled-components";
 import Loader from "../Loader";
 
 const Main = styled.div<{ $isDisabled: boolean }>`
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +41,7 @@ const Container = styled.button`
 
 const Underline = styled.div`
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   top: 5px;
   left: 5px;
   width: 100%;

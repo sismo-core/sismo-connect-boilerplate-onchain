@@ -115,7 +115,9 @@ export default function Home() {
         {/* ************************ CLAIM BUTTON *********************  */}
         {Boolean(response) && isConnected && (
           <StyledButton
-            disabled={contractClaim?.isLoading || !claimsEligibility?.isEligible}
+            disabled={
+              contractClaim?.isLoading || contractClaim?.isError || !claimsEligibility?.isEligible
+            }
             onClick={contractClaim?.claimAirdrop}
             isLoading={contractClaim?.isLoading}
           >

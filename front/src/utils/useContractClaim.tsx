@@ -11,6 +11,7 @@ import { formatError } from "./misc";
 export type ContractClaim = {
   claimAirdrop: () => Promise<void>;
   isLoading: boolean;
+  isError: boolean;
   error: string;
   amountClaimed: string;
 }
@@ -74,6 +75,7 @@ export default function useContractClaim(
   return {
     claimAirdrop,
     isLoading,
+    isError: Boolean(error),
     error,
     amountClaimed,
   };
