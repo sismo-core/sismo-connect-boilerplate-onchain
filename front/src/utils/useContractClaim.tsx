@@ -14,13 +14,13 @@ export type ContractClaim = {
   isError: boolean;
   error: string;
   amountClaimed: string;
-}
+};
 
 export default function useContractClaim(
   responseBytes: string | null,
   ethAddress: `0x${string}` | null | undefined,
   chain: Chain | null | undefined
-) : ContractClaim {
+): ContractClaim {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [amountClaimed, setAmountClaimed] = useState("");
@@ -66,6 +66,10 @@ export default function useContractClaim(
         setAmountClaimed(ethAmount);
       }
     } catch (e: any) {
+      if (e?.message?.includes("User rejected the request")) {
+        setError("");
+        return;
+      }
       setError(formatError(e));
     } finally {
       setIsLoading(false);
