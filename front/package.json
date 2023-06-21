@@ -10,6 +10,7 @@
     "deploy-airdrop": "forge script DeployAirdrop --rpc-url http://localhost:8545 -vv --mnemonics 'test test test test test test test test test test test junk' --sender '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' --broadcast &&  ./script/generate-abi-from-front.sh"
   },
   "dependencies": {
+    "@rainbow-me/rainbowkit": "^1.0.2",
     "@sismo-core/sismo-connect-react": "0.0.15",
     "@types/node": "20.2.3",
     "@types/react": "18.2.7",
@@ -18,8 +19,10 @@
     "eslint-config-next": "13.4.3",
     "next": "13.4.3",
     "nodemon": "^2.0.22",
+    "phosphor-react": "^1.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "styled-components": "^6.0.0-rc.3",
     "typescript": "5.0.4",
     "viem": "^0.3.24",
     "wagmi": "^1.0.4"

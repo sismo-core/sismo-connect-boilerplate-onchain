@@ -1,5 +1,7 @@
 "use client";
 
+import '@rainbow-me/rainbowkit/styles.css';
+
 import { useEffect, useState } from "react";
 import {
   mainnet,
@@ -16,13 +18,13 @@ import {
 } from "viem/chains";
 import { Chain, configureChains, createConfig } from "wagmi";
 import { WagmiConfig } from "wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
 import { publicProvider } from "wagmi/providers/public";
+import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
 export const mumbaiFork = {
   id: 5151111,
-  name: "Fork Mumbai - Tutorial Sismo",
-  network: "forkMumbaiTutoSismo",
+  name: "Local Fork Mumbai",
+  network: "localForkMumbai",
   nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
   rpcUrls: {
     default: {
@@ -52,17 +54,15 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [publicProvider()]
 );
 
+const { connectors } = getDefaultWallets({
+  appName: "My RainbowKit App",
+  projectId: "329179374477a9c2af7638995afd8db3",
+  chains,
+});
+
 const config = createConfig({
   autoConnect: true,
-  connectors: [
-    new InjectedConnector({
-      chains,
-      options: {
-        name: "Injected",
-        shimDisconnect: true,
-      },
-    }),
-  ],
+  connectors,
   publicClient,
   webSocketPublicClient,
 });
@@ -71,5 +71,9 @@ export function WagmiProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  return <WagmiConfig config={config}>{mounted && children}</WagmiConfig>;
+  return (
+    <WagmiConfig config={config}>
+      <RainbowKitProvider chains={chains} modalSize="compact">{mounted && children}</RainbowKitProvider>
+    </WagmiConfig>
+  );
 }
