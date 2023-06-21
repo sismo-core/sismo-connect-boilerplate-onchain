@@ -11,6 +11,7 @@ import getMinifiedId from "@/utils/getMinifiedId";
 import useEthAccount from "@/utils/useEthAccount";
 import Modal from "../Modal";
 import Button from "../Button";
+import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
 
 const Container = styled.div`
   position: absolute;
@@ -83,8 +84,8 @@ const Separator = styled.div`
   margin: 8px 0;
 `;
 
-const StyledCaretDown = styled(CaretDown)<{ isOpen: boolean }>`
-  transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+const StyledCaretDown = styled(CaretDown)<{ $isOpen: boolean }>`
+  transform: ${(props) => (props.$isOpen ? "rotate(180deg)" : "rotate(0deg)")};
 `;
 
 export default function Navbar() {
@@ -95,6 +96,10 @@ export default function Navbar() {
   const { chain } = useNetwork();
   const { address } = useAccount();
   const { switchNetwork } = useSwitchNetwork();
+
+  useAccount({
+    onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
+  });
 
   const ethAccount = useEthAccount(address as string);
   const { disconnect } = useDisconnect();
@@ -128,7 +133,7 @@ export default function Navbar() {
 
   return (
     <>
-      <Modal isOpen={isModalOpen}>
+      <Modal $isOpen={isModalOpen}>
         <WrongChainModal>
           <ModalTitle>Switch to {CHAIN.name} to continue</ModalTitle>
           <Button onClick={() => switchNetwork?.(CHAIN.id)}>Switch chain</Button>
@@ -141,7 +146,7 @@ export default function Navbar() {
             <Image src={SismoRoundedIcon} width={16} height={16} alt="Sismo rounded icon" />
             {sismoUserId?.minifiedId}
           </ItemLeft>
-          <StyledCaretDown size={16} color={"#E9EBF6"} isOpen={isOpen} />
+          <StyledCaretDown size={16} color={"#E9EBF6"} $isOpen={isOpen} />
         </Item>
 
         {chain && <ChainStatus>{chain.name}</ChainStatus>}

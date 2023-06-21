@@ -14,7 +14,7 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
  */
 contract Airdrop is ERC20, SismoConnect {
     using SismoConnectHelper for SismoConnectVerifiedResult;
-    error AlreadyClaimed();
+    error UserNotEligibleForAirdrop();
 
     struct StoredClaim {
         bytes16 groupId;
@@ -116,7 +116,7 @@ contract Airdrop is ERC20, SismoConnect {
     //we get the airdrop amount from the verified result based on the number of claims and auths that were verified
     uint256 airdropAmount = _getRewardAmount(result, userId);
   
-    if (airdropAmount == 0) revert AlreadyClaimed();
+    if (airdropAmount == 0) revert UserNotEligibleForAirdrop();
 
     // we mint the tokens to the user
     _mint(receiver, airdropAmount);

@@ -37,19 +37,19 @@ const StyledButton = styled(Button)`
 
 type Props = {
   amountClaimed: string;
-  ethAccountSigned: EthAccount;
+  ethAccount: EthAccount;
 };
 
-export default function Congrats({ amountClaimed, ethAccountSigned }: Props) {
+export default function Congrats({ amountClaimed, ethAccount }: Props) {
   const { response, sismoConnect } = useSismoConnect({ config: sismoConnectConfig });
 
   return (
     <Container>
       <Title>Congratulations</Title>
-      {ethAccountSigned && (
+      {ethAccount && (
         <Subtitle>
           You have received {amountClaimed} AIR on{" "}
-          {ethAccountSigned?.ens || getMinifiedId(ethAccountSigned?.address as string)}
+          {ethAccount?.ens || getMinifiedId(ethAccount?.address as string)}
         </Subtitle>
       )}
       {response && (

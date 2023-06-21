@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { waitForTransaction } from "@wagmi/core";
-import { decodeEventLog, formatEther } from "viem";
+import { useState } from "react";
+import { formatUnits } from "viem";
 import {
   AuthType,
   ClaimRequest,
@@ -11,17 +10,16 @@ import {
   SismoConnectConfig,
   SismoConnectResponse,
 } from "@sismo-core/sismo-connect-react";
-import { abi as AirdropABI } from "../../../abi/Airdrop.json";
-import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
-import { formatError, signMessage } from "@/utils/misc";
+import { signMessage } from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
-import Button from "@/components/Button";
 import Header from "@/components/Header";
-import Main from "@/components/Main";
+import Main, { StyledButton } from "@/components/Main";
 import Navbar from "@/components/Navbar";
-import { errorsABI } from "@/utils/errorsABI";
 import useEthAccount from "@/utils/useEthAccount";
 import getSismoSignature from "@/utils/getSismoSignature";
+import { useAccount, useNetwork } from "wagmi";
+import useClaimsEligibility from "@/utils/useClaimsEligibility";
+import useContractClaim from "@/utils/useContractClaim";
 
 /* ***********************  Sismo Connect Config *************************** */
 export const sismoConnectConfig: SismoConnectConfig = {
@@ -38,7 +36,9 @@ export const sismoConnectConfig: SismoConnectConfig = {
   // },
 };
 
-/* ***********************  Sismo Connect Claims *************************** */
+/* ***********************  Sismo Connect *************************** */
+
+export const AUTHS = [{ authType: AuthType.VAULT }];
 export const CLAIMS: ClaimRequest[] = [
   {
     // Gitcoin Passport
@@ -63,35 +63,67 @@ export const CLAIMS: ClaimRequest[] = [
   },
 ];
 
-export const AUTHS = [{ authType: AuthType.VAULT }];
-
 /* *******************  Defines the chain and contrat to use **************** */
 export const CHAIN = mumbaiFork;
-export const CONTRACT_ADDRESS = transactions[0].contractAddress as `0x${string}}`;
 
 export default function Home() {
+  // component states
   const [userInput, setUserInput] = useState<string>(localStorage.getItem("userInput") || "");
+  const [response, setResponse] = useState<SismoConnectResponse | null>(null);
+  const [responseBytes, setResponseBytes] = useState<string | null>(null);
 
+  // wagmi hooks
+  const { chain } = useNetwork();
+  const { isConnected } = useAccount();
+
+  // custom hooks for contract read and write
+  const claimsEligibility = useClaimsEligibility(response);
+  const ethAccount = useEthAccount(response ? getSismoSignature(response) : userInput);
+  const contractClaim = useContractClaim(responseBytes, ethAccount?.address, chain);
+
+  // user input field function
   function onUserInput(value: string) {
     localStorage.setItem("userInput", value);
     setUserInput(value);
   }
-  const ethAccount = useEthAccount(userInput);
 
   return (
     <>
       <Navbar />
       <Header />
-      <Main onUserInput={onUserInput} userInput={userInput} ethAccount={ethAccount}>
-        <SismoConnectButton
-          config={sismoConnectConfig}
-          auths={AUTHS}
-          claims={CLAIMS}
-          signature={{ message: signMessage(ethAccount?.address as `0x${string}`) }}
-          onResponseBytes={(response: string) => {
-            // do something with the response
-          }}
-        />
+      <Main
+        onUserInput={onUserInput}
+        userInput={userInput}
+        ethAccount={ethAccount}
+        contractClaim={contractClaim}
+        claimsEligibilities={claimsEligibility}
+      >
+        {/* *************** SISMO CONNECT BUTTON *********************  */}
+
+        {!response && (
+          <SismoConnectButton
+            config={sismoConnectConfig}
+            auths={AUTHS}
+            claims={CLAIMS}
+            signature={{ message: signMessage(ethAccount?.address as `0x${string}`) }}
+            onResponseBytes={(response: string) => setResponseBytes(response)}
+            onResponse={(response: SismoConnectResponse) => setResponse(response)}
+          />
+        )}
+
+        {/* ************************ CLAIM BUTTON *********************  */}
+        {response && isConnected && (
+          <StyledButton
+            disabled={contractClaim?.isLoading || !claimsEligibility?.isEligible}
+            onClick={contractClaim?.claimAirdrop}
+          >
+            {contractClaim.isLoading
+              ? "Claiming..."
+              : !claimsEligibility?.isEligible
+              ? "Claim"
+              : `Claim ${formatUnits(claimsEligibility?.totalEligibleAmount, 18)} AIR`}
+          </StyledButton>
+        )}
       </Main>
     </>
   );

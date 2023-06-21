@@ -32,14 +32,13 @@ export default function useEthAccount(input: string | `0x${string}`): EthAccount
   const [ens, setEns] = useState<string | null | undefined>(null);
 
   useEffect(() => {
-
-    if(!input) {
+    if (!input) {
       setIsLoading(false);
       setIsError(false);
       setAddress(null);
       setEns(null);
       return;
-    };
+    }
 
     if (!isEthAddress(input) && !isEns(input)) {
       setIsLoading(false);
@@ -53,6 +52,7 @@ export default function useEthAccount(input: string | `0x${string}`): EthAccount
       setIsLoading(true);
       setIsError(false);
       setAddress(input as `0x${string}`);
+
       client
         .getEnsName({ address: input as `0x${string}` })
         .then((ens) => {
@@ -71,6 +71,7 @@ export default function useEthAccount(input: string | `0x${string}`): EthAccount
       setIsLoading(true);
       setIsError(false);
       setEns(input);
+      
       client
         .getEnsAddress({ name: normalize(input) })
         .then((address) => {

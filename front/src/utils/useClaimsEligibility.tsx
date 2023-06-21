@@ -6,13 +6,21 @@ import getSismoUserId from "./getSismoUserId";
 import { formatUnits } from "viem";
 import { baseContractInputs, removeDashAndCapitalizeFirstLetter } from "./misc";
 
-export type ClaimMetadata = ClaimRequest & {
+export type ClaimEligibility = ClaimRequest & {
   name: string;
   isEligible: boolean;
   isClaimed: boolean;
   link: string;
   airdropStatus: string;
   airdropEligibleValue: string;
+};
+
+export type ClaimsEligibilityHook = {
+  claimsEligibility: ClaimEligibility[] | null | undefined;
+  totalEligibleAmount: bigint;
+  isEligible: boolean;
+  isLoading: boolean;
+  error: string;
 };
 
 type StoredUserClaims = {
@@ -25,13 +33,12 @@ type StoredUserClaims = {
 /* ***************** GET BASE VALUES **************************** */
 /* ************************************************************** */
 
-async function getGroupsMetadataBaseValue(rewardBaseValue: bigint) {
+async function getGroupsEligibilityBaseValue(rewardBaseValue: bigint) {
   // 1 - Read local storage claims metadata
-  let _claimsMetadata = JSON.parse(
+  let _claimsEligibility = JSON.parse(
     localStorage.getItem("claimsMetadata") || "null"
-  ) as ClaimMetadata[];
-
-  if (_claimsMetadata) return _claimsMetadata;
+  ) as ClaimEligibility[];
+  if (_claimsEligibility) return _claimsEligibility;
 
   // 2 - Fetch the claim group name from hub.sismo.io
   const groupsMetadata = await Promise.all(
@@ -43,7 +50,7 @@ async function getGroupsMetadataBaseValue(rewardBaseValue: bigint) {
   );
 
   // 3 - Build the claims metadata
-  _claimsMetadata = groupsMetadata.map((res) => {
+  _claimsEligibility = groupsMetadata.map((res) => {
     const claim = CLAIMS.find((claim) => claim.groupId === res.items[0].id);
     if (!claim) throw new Error(`Claim not found ${res.items[0].name}`);
 
@@ -57,11 +64,11 @@ async function getGroupsMetadataBaseValue(rewardBaseValue: bigint) {
         claim.isSelectableByUser ? "per community level" : ""
       }`,
       airdropEligibleValue: BigInt(0).toString(),
-    } as ClaimMetadata;
+    } as ClaimEligibility;
   });
 
-  localStorage.setItem("claimsMetadata", JSON.stringify(_claimsMetadata));
-  return _claimsMetadata;
+  localStorage.setItem("claimsEligibility", JSON.stringify(_claimsEligibility));
+  return _claimsEligibility;
 }
 
 /* ************************************************************** */
@@ -70,11 +77,11 @@ async function getGroupsMetadataBaseValue(rewardBaseValue: bigint) {
 
 async function getStoredUserClaims(
   publicClient: PublicClient,
-  claimsMetadata: ClaimMetadata[],
+  claimsEligibility: ClaimEligibility[],
   sismoUserId: string
 ) {
   return await Promise.all(
-    claimsMetadata.map(async (claim) => {
+    claimsEligibility.map(async (claim) => {
       const contractRes = (await publicClient.readContract({
         ...baseContractInputs,
         functionName: "userClaims",
@@ -95,14 +102,14 @@ async function getStoredUserClaims(
 /* ************************************************************** */
 
 async function getGroupsMetadataEligibilty(
-  claimsMetadata: ClaimMetadata[],
+  claimsEligibility: ClaimEligibility[],
   storedUserClaims: StoredUserClaims[],
   response: SismoConnectResponse,
   rewardBaseValue: bigint
 ) {
   const claimsResponse = response?.proofs?.map((proof) => proof.claims?.[0]);
 
-  return claimsMetadata.map((claim, index) => {
+  return claimsEligibility.map((claim, index) => {
     const storedClaim = storedUserClaims.find(
       (storedClaim) => storedClaim.groupId === claim.groupId
     );
@@ -153,19 +160,21 @@ async function getGroupsMetadataEligibilty(
 /* ************************* HOOK ******************************* */
 /* ************************************************************** */
 
-export default function useClaimsMetadata(response: SismoConnectResponse | null) {
+export default function useClaimsEligibility(
+  response: SismoConnectResponse | null
+): ClaimsEligibilityHook {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [claimsMetadata, setClaimsMetadata] = useState<ClaimMetadata[] | null>();
+  const [claimsEligibility, setClaimsEligibility] = useState<ClaimEligibility[] | null>();
   const [totalEligibleAmount, setTotalEligibleAmount] = useState<bigint>(BigInt(0));
   const [isEligible, setIsEligible] = useState(false);
-  const publicClient = usePublicClient({chainId: CHAIN?.id});
+  const publicClient = usePublicClient({ chainId: CHAIN?.id });
   const sismoUserId = getSismoUserId(response);
 
   useEffect(() => {
     if (!publicClient) return;
 
-    async function getClaimsMetadata() {
+    async function getClaimsEligibility() {
       try {
         setError("");
         setIsLoading(true);
@@ -176,12 +185,12 @@ export default function useClaimsMetadata(response: SismoConnectResponse | null)
         })) as bigint;
 
         // 2 - Get the claims metadata
-        const _claimsMetadata = await getGroupsMetadataBaseValue(_rewardBaseValue);
+        const _claimsEligibility = await getGroupsEligibilityBaseValue(_rewardBaseValue);
 
-        if (!_claimsMetadata) return;
+        if (!_claimsEligibility) return;
         // 3 - If the user is not connected, set the claims metadata and return
         if (!sismoUserId?.id) {
-          setClaimsMetadata(_claimsMetadata);
+          setClaimsEligibility(_claimsEligibility);
           return;
         }
         if (!response) return;
@@ -189,26 +198,26 @@ export default function useClaimsMetadata(response: SismoConnectResponse | null)
         // 4 - Read the stored user claims from the contract
         const storedUserClaims = await getStoredUserClaims(
           publicClient,
-          _claimsMetadata,
+          _claimsEligibility,
           sismoUserId.id
         );
 
         // 5 - Check the eligibility of the user for each claim
-        const _claimsMetadataEligibilty = await getGroupsMetadataEligibilty(
-          _claimsMetadata,
+        const _claimsMetadataEligibility = await getGroupsMetadataEligibilty(
+          _claimsEligibility,
           storedUserClaims,
           response,
           _rewardBaseValue
         );
 
         // 6 - Set the total eligible amount and the eligibility status
-        const _totalEligibleAmount = _claimsMetadataEligibilty.reduce(
+        const _totalEligibleAmount = _claimsMetadataEligibility.reduce(
           (acc, claim) => acc + BigInt(claim.airdropEligibleValue),
           BigInt(0)
         );
         setTotalEligibleAmount(_totalEligibleAmount);
         setIsEligible(_totalEligibleAmount > BigInt(0));
-        setClaimsMetadata(_claimsMetadataEligibilty);
+        setClaimsEligibility(_claimsMetadataEligibility);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -216,8 +225,8 @@ export default function useClaimsMetadata(response: SismoConnectResponse | null)
       }
     }
 
-    getClaimsMetadata();
+    getClaimsEligibility();
   }, [sismoUserId?.id, publicClient, response]);
 
-  return { claimsMetadata, totalEligibleAmount, isEligible, isLoading, error };
+  return { claimsEligibility, totalEligibleAmount, isEligible, isLoading, error };
 }

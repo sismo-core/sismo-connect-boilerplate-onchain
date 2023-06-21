@@ -27,11 +27,6 @@
     "type": "constructor"
   },
   {
-    "inputs": [],
-    "name": "AlreadyClaimed",
-    "type": "error"
-  },
-  {
     "inputs": [
       {
         "internalType": "enum AuthType",
@@ -40,6 +35,11 @@
       }
     ],
     "name": "AuthTypeNotFoundInVerifiedResult",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UserNotEligibleForAirdrop",
     "type": "error"
   },
   {

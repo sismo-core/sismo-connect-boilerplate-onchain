@@ -60,9 +60,10 @@ export default function Input({ value, onChange, ethAccount }: Props) {
   function onUserInput(event: React.ChangeEvent<HTMLInputElement>) {
     clearTimeout(timeoutRef.current);
     setUserInput(event.target.value);
+
     timeoutRef.current = setTimeout(() => {
       onChange(event.target.value ? event.target.value.toLowerCase().trim() : "");
-    }, 300);
+    }, 320);
   }
 
   return (

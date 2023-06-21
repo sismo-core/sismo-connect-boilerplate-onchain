@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import styled from "styled-components";
 import { SismoConnectResponse } from "@sismo-core/sismo-connect-react";
-import { ClaimMetadata } from "@/utils/useClaimsMetadata";
+import { ClaimEligibility} from "@/utils/useClaimsEligibility";
 import getMinifiedId from "@/utils/getMinifiedId";
 import { EthAccount } from "@/utils/useEthAccount";
 import GemTag from "../GemTag";
@@ -62,24 +62,22 @@ const DestinationTag = styled.div`
 `;
 
 type Props = {
-  claimsMetadata: ClaimMetadata[];
+  claimsEligibility: ClaimEligibility[];
   response: SismoConnectResponse | null;
   userInput: string;
   ethAccount: EthAccount;
-  ethAccountSigned: EthAccount | null;
   onUserInput: (value: string) => void;
 };
 
 export default function EligibilitySummary({
-  claimsMetadata,
+  claimsEligibility,
   response,
   userInput,
   ethAccount,
-  ethAccountSigned,
   onUserInput,
 }: Props) {
-  const requiredClaims = claimsMetadata?.filter((el) => !el?.isOptional);
-  const optionalClaims = claimsMetadata?.filter((el) => el?.isOptional);
+  const requiredClaims = claimsEligibility?.filter((el) => !el?.isOptional);
+  const optionalClaims = claimsEligibility.filter((el) => el?.isOptional);
 
   return (
     <Container>
@@ -127,9 +125,9 @@ export default function EligibilitySummary({
       {!response && <Input value={userInput} onChange={onUserInput} ethAccount={ethAccount} />}
       {response && (
         <DestinationTag>
-          {ethAccountSigned?.ens
-            ? ethAccountSigned?.ens
-            : getMinifiedId(ethAccountSigned?.address as string)}
+          {ethAccount?.ens
+            ? ethAccount?.ens
+            : getMinifiedId(ethAccount?.address as string)}
         </DestinationTag>
       )}
     </Container>
