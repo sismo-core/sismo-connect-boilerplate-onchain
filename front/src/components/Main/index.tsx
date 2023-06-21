@@ -11,6 +11,7 @@ import EligibilitySummary from "../EligibilitySummary";
 import Congrats from "../Congrats";
 import { ClaimsEligibilityHook } from "@/utils/useClaimsEligibility";
 import { ContractClaim } from "@/utils/useContractClaim";
+import { signMessage } from "@/utils/misc";
 
 const Container = styled.main`
   margin: 0 auto;
@@ -71,6 +72,7 @@ type Props = {
   ethAccount: EthAccount;
   contractClaim: ContractClaim;
   claimsEligibilities: ClaimsEligibilityHook;
+  isResponse: boolean;
   userInput: string;
   onUserInput: (value: string) => void;
 };
@@ -80,6 +82,7 @@ export default function Main({
   ethAccount,
   contractClaim,
   claimsEligibilities,
+  isResponse,
   userInput,
   onUserInput,
 }: Props) {
@@ -89,7 +92,7 @@ export default function Main({
   /* ************************  hooks ********************************************* */
   const { openConnectModal, connectModalOpen } = useConnectModal();
   const { isConnected } = useAccount();
-  const { response, sismoConnect } = useSismoConnect({ config: sismoConnectConfig });
+  const { sismoConnect } = useSismoConnect({ config: sismoConnectConfig });
 
   const {
     claimsEligibility,
@@ -133,7 +136,6 @@ export default function Main({
 
         <EligibilitySummary
           claimsEligibility={claimsEligibility}
-          response={response}
           userInput={userInput}
           ethAccount={ethAccount}
           onUserInput={onUserInput}
@@ -145,20 +147,21 @@ export default function Main({
           {children}
         </SismoWrapper>
 
-        {response && !isConnected && (
-          <StyledButton onClick={() => openConnectModal?.()} disabled={connectModalOpen}>
+        {isResponse && !isConnected && (
+          <StyledButton onClick={() => openConnectModal?.()} disabled={connectModalOpen} isLoading={connectModalOpen}>
             {connectModalOpen ? "Connecting wallet..." : "Connect wallet to claim"}
           </StyledButton>
         )}
 
-        {response && !contractClaimIsLoading && (
+        {isResponse && !contractClaimIsLoading && (
           <MoreClaim
             onClick={() => {
-              sismoConnect.request({
-                auths: AUTHS,
-                claims: CLAIMS,
-                signature: { message: response.signedMessage as string },
-              });
+              ethAccount?.address &&
+                sismoConnect.request({
+                  auths: AUTHS,
+                  claims: CLAIMS,
+                  signature: { message: signMessage(ethAccount.address) },
+                });
             }}
           >
             Prove eligibility for more tokens

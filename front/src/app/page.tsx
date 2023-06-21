@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatUnits } from "viem";
+import { Chain, formatUnits } from "viem";
 import {
   AuthType,
   ClaimRequest,
@@ -24,16 +24,16 @@ import useContractClaim from "@/utils/useContractClaim";
 /* ***********************  Sismo Connect Config *************************** */
 export const sismoConnectConfig: SismoConnectConfig = {
   appId: "0xf4977993e52606cfd67b7a1cde717069",
-  // vault: {
-  //   // For development purposes insert the identifier that you want to impersonate any account here
-  //   // Never use this in production
-  //   impersonate: [
-  //     "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // vitalik.eth
-  //     "0xce2ef28c65e5db090d75630c98a807da003fb36f", // a Gitcoin Passport Holder
-  //     "twitter:dhadrien_:2390703980", // the twitter account @dhadrien_
-  //     "0x855193BCbdbD346B423FF830b507CBf90ecCc90B", // the address of a Sismo team member
-  //   ],
-  // },
+  vault: {
+    // For development purposes insert the identifier that you want to impersonate any account here
+    // Never use this in production
+    impersonate: [
+      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // vitalik.eth
+      "0xce2ef28c65e5db090d75630c98a807da003fb36f", // a Gitcoin Passport Holder
+      "twitter:dhadrien_:2390703980", // the twitter account @dhadrien_
+      "0x855193BCbdbD346B423FF830b507CBf90ecCc90B", // the address of a Sismo team member
+    ],
+  },
 };
 
 /* ***********************  Sismo Connect *************************** */
@@ -64,7 +64,8 @@ export const CLAIMS: ClaimRequest[] = [
 ];
 
 /* *******************  Defines the chain and contrat to use **************** */
-export const CHAIN = mumbaiFork;
+export const CHAIN: Chain = mumbaiFork;
+// or import another chain from "viem/chains"
 
 export default function Home() {
   // component states
@@ -77,7 +78,7 @@ export default function Home() {
   const { isConnected } = useAccount();
 
   // custom hooks for contract read and write
-  const claimsEligibility = useClaimsEligibility(response);
+  const claimsEligibility = useClaimsEligibility();
   const ethAccount = useEthAccount(response ? getSismoSignature(response) : userInput);
   const contractClaim = useContractClaim(responseBytes, ethAccount?.address, chain);
 
@@ -92,33 +93,34 @@ export default function Home() {
       <Navbar />
       <Header />
       <Main
-        onUserInput={onUserInput}
-        userInput={userInput}
         ethAccount={ethAccount}
         contractClaim={contractClaim}
         claimsEligibilities={claimsEligibility}
+        isResponse={Boolean(response)}
+        userInput={userInput}
+        onUserInput={onUserInput}
       >
         {/* *************** SISMO CONNECT BUTTON *********************  */}
-
-        {!response && (
+        {!Boolean(response) && (
           <SismoConnectButton
             config={sismoConnectConfig}
             auths={AUTHS}
             claims={CLAIMS}
-            signature={{ message: signMessage(ethAccount?.address as `0x${string}`) }}
-            onResponseBytes={(response: string) => setResponseBytes(response)}
+            signature={{ message: ethAccount?.address ? signMessage(ethAccount.address) : "" }}
+            onResponseBytes={(responseBytes: string) => setResponseBytes(responseBytes)}
             onResponse={(response: SismoConnectResponse) => setResponse(response)}
           />
         )}
 
         {/* ************************ CLAIM BUTTON *********************  */}
-        {response && isConnected && (
+        {Boolean(response) && isConnected && (
           <StyledButton
             disabled={contractClaim?.isLoading || !claimsEligibility?.isEligible}
             onClick={contractClaim?.claimAirdrop}
+            isLoading={contractClaim?.isLoading}
           >
             {contractClaim.isLoading
-              ? "Claiming..."
+              ? "Claiming"
               : !claimsEligibility?.isEligible
               ? "Claim"
               : `Claim ${formatUnits(claimsEligibility?.totalEligibleAmount, 18)} AIR`}

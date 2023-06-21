@@ -1,11 +1,11 @@
-import { createWalletClient, parseEther, custom } from "viem";
+import { createWalletClient, parseEther, custom, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { fetchBalance } from "@wagmi/core";
 import { mumbaiFork } from "./wagmi";
 
 export const publicWalletClient = createWalletClient({
   chain: mumbaiFork,
-  transport: custom(window.ethereum),
+  transport: window.ethereum ? custom(window.ethereum) : http(),
   // The private key of the second account of the local anvil network
   // This account is used for the app to allow the user to have fake tokens to call the contract
   account: privateKeyToAccount(

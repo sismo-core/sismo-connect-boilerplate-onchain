@@ -63,7 +63,6 @@ const DestinationTag = styled.div`
 
 type Props = {
   claimsEligibility: ClaimEligibility[];
-  response: SismoConnectResponse | null;
   userInput: string;
   ethAccount: EthAccount;
   onUserInput: (value: string) => void;
@@ -71,13 +70,15 @@ type Props = {
 
 export default function EligibilitySummary({
   claimsEligibility,
-  response,
   userInput,
   ethAccount,
   onUserInput,
 }: Props) {
   const requiredClaims = claimsEligibility?.filter((el) => !el?.isOptional);
-  const optionalClaims = claimsEligibility.filter((el) => el?.isOptional);
+  const optionalClaims = claimsEligibility?.filter((el) => el?.isOptional);
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const isClaim = searchParams.get("sismoConnectResponseCompressed");
 
   return (
     <Container>
@@ -122,8 +123,8 @@ export default function EligibilitySummary({
 
       <Label>Claim destination:</Label>
 
-      {!response && <Input value={userInput} onChange={onUserInput} ethAccount={ethAccount} />}
-      {response && (
+      {!isClaim && <Input value={userInput} onChange={onUserInput} ethAccount={ethAccount} />}
+      {isClaim && (
         <DestinationTag>
           {ethAccount?.ens
             ? ethAccount?.ens

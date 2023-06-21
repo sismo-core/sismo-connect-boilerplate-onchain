@@ -1,7 +1,11 @@
-import { CHAIN, CLAIMS } from "@/app/page";
-import { ClaimRequest, SismoConnectResponse } from "@sismo-core/sismo-connect-react";
+import { CHAIN, CLAIMS, sismoConnectConfig } from "@/app/page";
+import {
+  ClaimRequest,
+  SismoConnectResponse,
+  useSismoConnect,
+} from "@sismo-core/sismo-connect-react";
 import { useEffect, useState } from "react";
-import { Chain, PublicClient, usePublicClient } from "wagmi";
+import { PublicClient, usePublicClient } from "wagmi";
 import getSismoUserId from "./getSismoUserId";
 import { formatUnits } from "viem";
 import { baseContractInputs, removeDashAndCapitalizeFirstLetter } from "./misc";
@@ -160,14 +164,15 @@ async function getGroupsMetadataEligibilty(
 /* ************************* HOOK ******************************* */
 /* ************************************************************** */
 
-export default function useClaimsEligibility(
-  response: SismoConnectResponse | null
-): ClaimsEligibilityHook {
+export default function useClaimsEligibility(): ClaimsEligibilityHook {
+  //response: SismoConnectResponse | null
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [claimsEligibility, setClaimsEligibility] = useState<ClaimEligibility[] | null>();
   const [totalEligibleAmount, setTotalEligibleAmount] = useState<bigint>(BigInt(0));
   const [isEligible, setIsEligible] = useState(false);
+  const { response } = useSismoConnect({ config: sismoConnectConfig });
+
   const publicClient = usePublicClient({ chainId: CHAIN?.id });
   const sismoUserId = getSismoUserId(response);
 
@@ -178,6 +183,7 @@ export default function useClaimsEligibility(
       try {
         setError("");
         setIsLoading(true);
+
         // 1 read the contract airdrop base reward value
         const _rewardBaseValue = (await publicClient.readContract({
           ...baseContractInputs,
@@ -186,11 +192,12 @@ export default function useClaimsEligibility(
 
         // 2 - Get the claims metadata
         const _claimsEligibility = await getGroupsEligibilityBaseValue(_rewardBaseValue);
-
         if (!_claimsEligibility) return;
+
         // 3 - If the user is not connected, set the claims metadata and return
         if (!sismoUserId?.id) {
           setClaimsEligibility(_claimsEligibility);
+          setIsLoading(false);
           return;
         }
         if (!response) return;
@@ -215,17 +222,23 @@ export default function useClaimsEligibility(
           (acc, claim) => acc + BigInt(claim.airdropEligibleValue),
           BigInt(0)
         );
+
         setTotalEligibleAmount(_totalEligibleAmount);
         setIsEligible(_totalEligibleAmount > BigInt(0));
         setClaimsEligibility(_claimsMetadataEligibility);
+        setIsLoading(false);
       } catch (e: any) {
         setError(e.message);
-      } finally {
         setIsLoading(false);
       }
     }
 
-    getClaimsEligibility();
+    const searchParams = new URLSearchParams(window.location.search);
+    const isClaim = searchParams.get("sismoConnectResponseCompressed");
+
+    if (!isClaim || (sismoUserId?.id && isClaim)) {
+      getClaimsEligibility();
+    }
   }, [sismoUserId?.id, publicClient, response]);
 
   return { claimsEligibility, totalEligibleAmount, isEligible, isLoading, error };

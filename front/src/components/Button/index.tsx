@@ -1,12 +1,17 @@
 import styled from "styled-components";
+import Loader from "../Loader";
 
-const Main = styled.div`
+const Main = styled.div<{ $isDisabled: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 16px;
   background-color: #0e1528;
   border: 1px solid #64d7c0;
   border-radius: 10px;
-  cursor: pointer;
   transition: all 0.15s ease-in-out;
+  cursor: ${({ $isDisabled }) => ($isDisabled ? "default" : "pointer")};
 `;
 
 const Container = styled.button`
@@ -46,12 +51,20 @@ const Underline = styled.div`
 type Props = {
   children: React.ReactNode;
   disabled?: boolean;
+  isLoading?: boolean;
   style?: React.CSSProperties;
   className?: string;
   onClick: () => void;
 };
 
-export default function Button({ children, style, className, disabled, onClick }: Props) {
+export default function Button({
+  children,
+  style,
+  className,
+  disabled,
+  isLoading,
+  onClick,
+}: Props) {
   return (
     <Container
       onClick={() => !disabled && onClick()}
@@ -59,7 +72,10 @@ export default function Button({ children, style, className, disabled, onClick }
       style={style}
       className={className}
     >
-      <Main>{children}</Main>
+      <Main $isDisabled={Boolean(disabled) || Boolean(isLoading)}>
+        {isLoading && <Loader size={18} />}
+        {children}
+      </Main>
       <Underline />
     </Container>
   );
