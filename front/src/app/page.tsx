@@ -29,10 +29,9 @@ export const sismoConnectConfig: SismoConnectConfig = {
     // For development purposes insert the identifier that you want to impersonate any account here
     // Never use this in production
     impersonate: [
-      "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045", // vitalik.eth
-      "0xce2ef28c65e5db090d75630c98a807da003fb36f", // a Gitcoin Passport Holder
-      "twitter:dhadrien_:2390703980", // the twitter account @dhadrien_
-      "0x855193BCbdbD346B423FF830b507CBf90ecCc90B", // the address of a Sismo team member
+      "dhadrien.sismo.eth",
+      "github:dhadrien",
+      "twitter:dhadrien_",
     ],
   },
 };
