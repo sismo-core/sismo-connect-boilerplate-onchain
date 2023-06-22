@@ -63,7 +63,7 @@ You can then run tests on a local fork network to test your contracts.
 forge test --fork-url https://rpc.ankr.com/eth_goerli
 
 ## Run fork tests with mumbai
-forge test --fork-url https://rpc.ankr.com/polygon_mumbai
+forge test --fork-url https://gateway.tenderly.co/public/polygon-mumbai
 
 # you can aslo use the rpc url you want by passing an environment variable
 forge test --fork-url $RPC_URL
