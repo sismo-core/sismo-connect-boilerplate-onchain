@@ -15,7 +15,7 @@ import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
 
 const Container = styled.div`
   position: absolute;
-  width: 194px;
+  min-width: 194px;
   top: 32px;
   right: 60px;
   padding: 6px 12px;
