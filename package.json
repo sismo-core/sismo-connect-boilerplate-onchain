@@ -9,17 +9,5 @@
     "deploy-airdrop": "forge script DeployAirdrop --rpc-url http://localhost:8545 -vv --mnemonics 'test test test test test test test test test test test junk' --sender '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' --broadcast",
     "test": "forge test --fork-url http://localhost:8545",
     "snapshot": "forge snapshot --fork-url http://localhost:8545"
-  },
-  "dependencies": {
-    "@sismo-core/hydra-s2": "^1.0.0",
-    "@types/node": "18.15.11",
-    "axios": "^1.3.5",
-    "eslint": "8.38.0",
-    "nodemon": "^2.0.22",
-    "typescript": "5.0.4",
-    "viem": "^0.3.17"
-  },
-  "devDependencies": {
-    "@types/styled-components": "^5.1.26"
   }
 }
