@@ -15,7 +15,6 @@ export function removeDashAndCapitalizeFirstLetter(str: string) {
 }
 
 export const baseContractInputs = {
-  address: transactions[0].contractAddress as `0x${string}}`,
   abi: [...AirdropABI, ...errorsABI],
 };
 

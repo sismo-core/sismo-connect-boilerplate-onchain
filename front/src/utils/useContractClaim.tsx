@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Chain, TransactionReceipt, decodeEventLog, formatEther } from "viem";
 import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import { waitForTransaction } from "@wagmi/core";
-import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
 import { CHAIN } from "@/app/page";
@@ -19,7 +18,8 @@ export type ContractClaim = {
 export default function useContractClaim(
   responseBytes: string | null,
   ethAddress: `0x${string}` | null | undefined,
-  chain: Chain | null | undefined
+  chain: Chain | null | undefined,
+  contractAddress: `0x${string}`,
 ): ContractClaim {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +29,7 @@ export default function useContractClaim(
   const prepareContractWrite = usePrepareContractWrite(
     responseBytes && ethAddress && chain?.id === CHAIN.id
       ? {
-          address: transactions[0].contractAddress as `0x${string}}`,
+          address: contractAddress,
           abi: [...AirdropABI, ...errorsABI],
           functionName: "claimWithSismo",
           args: [ethAddress, responseBytes],
