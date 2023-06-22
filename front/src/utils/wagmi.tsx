@@ -36,7 +36,7 @@ export const mumbaiFork = {
   },
 } as const satisfies Chain;
 
-const { chains, publicClient, webSocketPublicClient } = configureChains(
+const { chains, publicClient } = configureChains(
   [
     mumbaiFork,
     mainnet,
@@ -64,7 +64,6 @@ const config = createConfig({
   autoConnect: true,
   connectors,
   publicClient,
-  webSocketPublicClient,
 });
 
 export function WagmiProvider({ children }: { children: React.ReactNode }) {

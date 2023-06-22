@@ -41,6 +41,8 @@ export default function useContractClaim(
   useEffect(() => {
     if (prepareContractWrite?.error) {
       setError(formatError(prepareContractWrite?.error));
+    } else {
+      setError("");
     }
   }, [prepareContractWrite?.error]);
 
