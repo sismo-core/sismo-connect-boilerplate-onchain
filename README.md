@@ -15,7 +15,6 @@ This repository aims at providing a simple example on how to integrate Sismo Con
 ```bash
 git clone https://github.com/sismo-core/sismo-connect-boilerplate-onchain
 cd sismo-connect-boilerplate-onchain
-yarn
 ```
 
 ### Install contract dependencies
