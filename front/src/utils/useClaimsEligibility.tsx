@@ -63,7 +63,7 @@ async function getGroupsEligibilityBaseValue(rewardBaseValue: bigint) {
       name: removeDashAndCapitalizeFirstLetter(res.items[0].name),
       isEligible: false,
       isClaimed: false,
-      link: `https://factory.sismo.io/groups-explorer?search=${claim.groupId}}`,
+      link: `https://factory.sismo.io/groups-explorer?search=${claim.groupId}`,
       airdropStatus: `${formatUnits(rewardBaseValue, 18)} AIR ${
         claim.isSelectableByUser ? "per community level" : ""
       }`,
