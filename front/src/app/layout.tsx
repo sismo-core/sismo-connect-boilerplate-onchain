@@ -5,9 +5,9 @@ import { WagmiProvider } from "@/utils/wagmi";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "SafeAirdrop: Sybil-resistant airdrop from privately-aggregated data",
+  title: "SafeDrop: Sybil-resistant airdrop from privately-aggregated data",
   description:
-    "SafeAirDrop is a Sybil-resistant and privacy-preserving ERC20 airdrop that distributes AIR tokens to users proportionally based on their reputation, aggregated from diverse sources of data (wallets, Telegram, Twitter and GitHub accounts).",
+    "SafeDrop is a Sybil-resistant and privacy-preserving ERC20 airdrop that distributes AIR tokens to users proportionally based on their reputation, aggregated from diverse sources of data (wallets, Telegram, Twitter and GitHub accounts).",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

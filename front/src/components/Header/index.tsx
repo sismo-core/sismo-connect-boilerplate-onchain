@@ -48,9 +48,9 @@ export default function Header() {
     <Container>
       <Image src={logo} alt="Sismo Connect" width={98} height={98} />
       <Content>
-        <Title>SafeAirdrop: Sybil-resistant airdrop from privately-aggregated data</Title>
+        <Title>SafeDrop: Sybil-resistant airdrop from privately-aggregated data</Title>
         <Description>
-          SafeAirDrop is a Sybil-resistant and privacy-preserving ERC20 airdrop that distributes AIR
+          SafeDrop is a Sybil-resistant and privacy-preserving ERC20 airdrop that distributes AIR
           tokens to users proportionally based on their reputation, aggregated from diverse sources
           of data (wallets, Telegram, Twitter and GitHub accounts).
         </Description>
