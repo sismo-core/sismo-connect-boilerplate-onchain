@@ -20,6 +20,7 @@ import getSismoSignature from "@/utils/getSismoSignature";
 import { useAccount, useNetwork } from "wagmi";
 import useClaimsEligibility from "@/utils/useClaimsEligibility";
 import useContractClaim from "@/utils/useContractClaim";
+import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 
 /* ***********************  Sismo Connect Config *************************** */
 export const sismoConnectConfig: SismoConnectConfig = {
@@ -67,6 +68,9 @@ export const CLAIMS: ClaimRequest[] = [
 export const CHAIN: Chain = mumbaiFork;
 // or import another chain from "viem/chains"
 
+export const CONTRACT_ADDRESS = transactions[0].contractAddress as `0x${string}`;
+//export const CONTRACT_ADDRESS = "0xbb20d2b0721170bd9969a3e78488dcb61afb0871de78f03f7e593997096d1a3f"; // Deployed on Polygon
+
 export default function Home() {
   // component states
   const [userInput, setUserInput] = useState<string>(localStorage.getItem("userInput") || "");
@@ -78,9 +82,14 @@ export default function Home() {
   const { isConnected } = useAccount();
 
   // custom hooks for contract read and write
-  const claimsEligibility = useClaimsEligibility();
+  const claimsEligibility = useClaimsEligibility(CONTRACT_ADDRESS);
   const ethAccount = useEthAccount(response ? getSismoSignature(response) : userInput);
-  const contractClaim = useContractClaim(responseBytes, ethAccount?.address, chain);
+  const contractClaim = useContractClaim(
+    responseBytes,
+    ethAccount?.address,
+    chain,
+    CONTRACT_ADDRESS
+  );
 
   // user input field function
   function onUserInput(value: string) {

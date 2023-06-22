@@ -81,6 +81,7 @@ async function getGroupsEligibilityBaseValue(rewardBaseValue: bigint) {
 
 async function getStoredUserClaims(
   publicClient: PublicClient,
+  contractAddress: `0x${string}`,
   claimsEligibility: ClaimEligibility[],
   sismoUserId: string
 ) {
@@ -88,6 +89,7 @@ async function getStoredUserClaims(
     claimsEligibility.map(async (claim) => {
       const contractRes = (await publicClient.readContract({
         ...baseContractInputs,
+        address: contractAddress,
         functionName: "userClaims",
         args: [sismoUserId, claim.groupId],
       })) as [string, bigint, boolean];
@@ -164,7 +166,7 @@ async function getGroupsMetadataEligibilty(
 /* ************************* HOOK ******************************* */
 /* ************************************************************** */
 
-export default function useClaimsEligibility(): ClaimsEligibilityHook {
+export default function useClaimsEligibility(contractAddress: `0x${string}`): ClaimsEligibilityHook {
   //response: SismoConnectResponse | null
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -175,6 +177,7 @@ export default function useClaimsEligibility(): ClaimsEligibilityHook {
 
   const publicClient = usePublicClient({ chainId: CHAIN?.id });
   const sismoUserId = getSismoUserId(response);
+  
 
   useEffect(() => {
     if (!publicClient) return;
@@ -187,6 +190,7 @@ export default function useClaimsEligibility(): ClaimsEligibilityHook {
         // 1 read the contract airdrop base reward value
         const _rewardBaseValue = (await publicClient.readContract({
           ...baseContractInputs,
+          address: contractAddress,
           functionName: "REWARD_BASE_VALUE",
         })) as bigint;
 
@@ -205,6 +209,7 @@ export default function useClaimsEligibility(): ClaimsEligibilityHook {
         // 4 - Read the stored user claims from the contract
         const storedUserClaims = await getStoredUserClaims(
           publicClient,
+          contractAddress,
           _claimsEligibility,
           sismoUserId.id
         );
@@ -239,7 +244,7 @@ export default function useClaimsEligibility(): ClaimsEligibilityHook {
     if (!isClaim || (sismoUserId?.id && isClaim)) {
       getClaimsEligibility();
     }
-  }, [sismoUserId?.id, publicClient, response]);
+  }, [sismoUserId?.id, publicClient, response, contractAddress]);
 
   return { claimsEligibility, totalEligibleAmount, isEligible, isLoading, error };
 }
