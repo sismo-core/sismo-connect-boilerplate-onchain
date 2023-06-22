@@ -126,6 +126,13 @@ export default function Main({
       </ContainerCentered>
     );
 
+  if (!claimsEligibility && claimsEligibilityError && error)
+    return (
+      <ContainerCentered>
+        <Error>{error}</Error>
+      </ContainerCentered>
+    );
+
   if (amountClaimed && ethAccount)
     return <Congrats amountClaimed={amountClaimed} ethAccount={ethAccount} />;
 
@@ -148,7 +155,11 @@ export default function Main({
         </SismoWrapper>
 
         {isResponse && !isConnected && (
-          <StyledButton onClick={() => openConnectModal?.()} disabled={connectModalOpen} isLoading={connectModalOpen}>
+          <StyledButton
+            onClick={() => openConnectModal?.()}
+            disabled={connectModalOpen}
+            isLoading={connectModalOpen}
+          >
             {connectModalOpen ? "Connecting wallet..." : "Connect wallet to claim"}
           </StyledButton>
         )}
