@@ -52,6 +52,35 @@ yarn dev
 The frontend is now available on http://localhost:3000/ and the contracts have been deployed on your local blockchain.
 You can now experiment the user flow by going to your local frontend http://localhost:3000/.
 
+### Deploy your Airdrop contract
+
+With a private key, a RPC url and an etherscan api key:
+
+```bash
+forge script DeployAirdrop \
+--rpc-url $RPC_URL \
+--private-key "$PRIVATE_KEY" \
+--broadcast \
+--slow \
+--etherscan-api-key "$ETHERSCAN_API_KEY" \
+--verify \
+--watch
+```
+
+With a mnemonic and a sender:
+
+```bash
+forge script DeployAirdrop \
+--rpc-url $RPC_URL \
+--mnemonics "$MNEMONIC" \
+--sender $SENDER \
+--broadcast \
+--slow \
+--etherscan-api-key "$ETHERSCAN_API_KEY" \
+--verify \
+--watch
+```
+
 ### Run contract tests
 
 Sismo Connect contracts are currently deployed on several chains.
