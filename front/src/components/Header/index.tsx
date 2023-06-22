@@ -68,7 +68,7 @@ export default function Header() {
             Tutorial on how to built it
           </LinkItem>
           <LinkItem
-            href="https://www.notion.so/sismo/SafeDrop-Sybil-resistant-airdrop-from-privately-aggregated-data-38d0dc265cb142b6baecbee863202558#4740f5b444f3433682ac30d6d0e0bf3c"
+            href="https://sismo.notion.site/SafeDrop-Sybil-resistant-airdrop-from-privately-aggregated-data-38d0dc265cb142b6baecbee863202558#4740f5b444f3433682ac30d6d0e0bf3c"
             target="_blank"
           >
             Full case study

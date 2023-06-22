@@ -41,15 +41,15 @@ export const sismoConnectConfig: SismoConnectConfig = {
 export const AUTHS = [{ authType: AuthType.VAULT }];
 export const CLAIMS: ClaimRequest[] = [
   {
+    // Sismo Community Members
+    groupId: "0xd630aa769278cacde879c5c0fe5d203c",
+    isSelectableByUser: true,
+  },
+  {
     // Gitcoin Passport
     groupId: "0x1cde61966decb8600dfd0749bd371f12",
     claimType: ClaimType.GTE,
     value: 15,
-  },
-  {
-    // Sismo Community Members
-    groupId: "0xd630aa769278cacde879c5c0fe5d203c",
-    isSelectableByUser: true,
   },
   {
     // Sismo Community Early Members

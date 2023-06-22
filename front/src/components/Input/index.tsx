@@ -68,7 +68,7 @@ export default function Input({ value, onChange, ethAccount }: Props) {
 
   return (
     <Container>
-      <InputEl type="text" placeholder="0x123... or ENS" value={userInput} onChange={onUserInput} />
+      <InputEl type="text" placeholder="0x00 or ENS" value={userInput} onChange={onUserInput} />
       {value && ethAccount?.isError && !ethAccount?.isLoading && (
         <Status>✘ Invalid ethereum address or ENS name</Status>
       )}
