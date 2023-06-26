@@ -1,12 +1,13 @@
 import { Fragment } from "react";
 import styled from "styled-components";
-import { SismoConnectResponse } from "@sismo-core/sismo-connect-react";
+import { SismoConnectResponse, useSismoConnect } from "@sismo-core/sismo-connect-react";
 import { ClaimEligibility} from "@/utils/useClaimsEligibility";
 import getMinifiedId from "@/utils/getMinifiedId";
 import { EthAccount } from "@/utils/useEthAccount";
 import GemTag from "../GemTag";
 import ClaimTag from "../ClaimTag";
 import Input from "../Input";
+import { sismoConnectConfig } from "@/app/page";
 
 const Container = styled.div`
   display: flex;
@@ -74,11 +75,12 @@ export default function EligibilitySummary({
   ethAccount,
   onUserInput,
 }: Props) {
+  const { response } = useSismoConnect({ config: sismoConnectConfig });
+
   const requiredClaims = claimsEligibility?.filter((el) => !el?.isOptional);
   const optionalClaims = claimsEligibility?.filter((el) => el?.isOptional);
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const isClaim = searchParams.get("sismoConnectResponseCompressed");
+  const isClaim = Boolean(response);
 
   return (
     <Container>

@@ -238,8 +238,7 @@ export default function useClaimsEligibility(contractAddress: `0x${string}`): Cl
       }
     }
 
-    const searchParams = new URLSearchParams(window.location.search);
-    const isClaim = searchParams.get("sismoConnectResponseCompressed");
+    const isClaim = Boolean(response);
 
     if (!isClaim || (sismoUserId?.id && isClaim)) {
       getClaimsEligibility();

@@ -112,10 +112,7 @@ export default function Navbar() {
 
   function onLogOut() {
     disconnect();
-    const url = new URL(window.location.href);
     localStorage.clear();
-    url.searchParams.delete("sismoConnectResponseCompressed");
-    window.history.replaceState({}, "", url.toString());
     window.location.reload();
   }
 
