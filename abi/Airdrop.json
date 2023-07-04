@@ -107,12 +107,38 @@
   },
   {
     "inputs": [],
+    "name": "APP_ID",
+    "outputs": [
+      {
+        "internalType": "bytes16",
+        "name": "",
+        "type": "bytes16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "GITCOIN_PASSPORT_GROUP_ID",
     "outputs": [
       {
         "internalType": "bytes16",
         "name": "",
         "type": "bytes16"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "IS_IMPERSONATION_MODE",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -437,20 +463,27 @@
     "name": "config",
     "outputs": [
       {
-        "internalType": "bytes16",
-        "name": "appId",
-        "type": "bytes16"
-      },
-      {
         "components": [
           {
-            "internalType": "bool",
-            "name": "isImpersonationMode",
-            "type": "bool"
+            "internalType": "bytes16",
+            "name": "appId",
+            "type": "bytes16"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bool",
+                "name": "isImpersonationMode",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct VaultConfig",
+            "name": "vault",
+            "type": "tuple"
           }
         ],
-        "internalType": "struct VaultConfig",
-        "name": "vault",
+        "internalType": "struct SismoConnectConfig",
+        "name": "",
         "type": "tuple"
       }
     ],
