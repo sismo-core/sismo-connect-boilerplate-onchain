@@ -1,117 +1,57 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "forge-std/console.sol";
 import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 
 /*
  * @title Airdrop
  * @author Sismo
- * @dev Simple Airdrop contract that mints ERC20 tokens to a receiver
+ * @dev Simple Airdrop contract that mints ERC20 tokens to the msg.sender
  * This contract is used for tutorial purposes only
  * It will be used to demonstrate how to integrate Sismo Connect
  */
-contract Airdrop is SismoConnect {
+contract Airdrop is ERC20, SismoConnect {
+  error AlreadyClaimed();
   using SismoConnectHelper for SismoConnectVerifiedResult;
+  mapping(uint256 => bool) public claimed;
 
-  // allow impersonation
+  constructor(
+    string memory name,
+    string memory symbol,
+    bytes16 appId,
+    bool isImpersonationMode
+  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {}
 
-  constructor(bytes16 appId) SismoConnect(buildConfig({appId: appId, isImpersonationMode: true})) {}
-
-  uint256 public number = 0;
-
-  event Transfer(address indexed from, address indexed to, uint256 value);
-
-  function setNumber(uint256 newNumber) public {
-    number = newNumber;
-  }
-
-  function increment() public {
-    number++;
-  }
-
-  function verifySismoConnectResponse(bytes memory response) public {
-    // Recreate the request made in the fontend to verify the proof
-    // We will verify the Sismo Connect Response containing the ZK Proofs against it
-    AuthRequest[] memory auths = new AuthRequest[](6);
-    auths[0] = _authRequestBuilder.build({authType: AuthType.VAULT});
-    auths[1] = _authRequestBuilder.build({authType: AuthType.EVM_ACCOUNT});
-    auths[2] = _authRequestBuilder.build({
-      authType: AuthType.EVM_ACCOUNT,
-      userId: uint160(0xA4C94A6091545e40fc9c3E0982AEc8942E282F38)
-    });
-    auths[3] = _authRequestBuilder.build({authType: AuthType.GITHUB});
-    auths[4] = _authRequestBuilder.build({
-      authType: AuthType.TWITTER,
-      userId: 295218901,
-      isOptional: true,
-      isSelectableByUser: false
-    });
-    auths[5] = _authRequestBuilder.build({
-      authType: AuthType.TELEGRAM,
-      userId: 875608110,
-      isOptional: true,
-      isSelectableByUser: false
-    });
-
-    ClaimRequest[] memory claims = new ClaimRequest[](7);
-    claims[0] = _claimRequestBuilder.build({groupId: 0xda1c3726426d5639f4c6352c2c976b87});
-    claims[1] = _claimRequestBuilder.build({
-      groupId: 0x85c7ee90829de70d0d51f52336ea4722,
-      claimType: ClaimType.GTE,
-      value: 4
-    });
-    claims[2] = _claimRequestBuilder.build({
-      groupId: 0xfae674b6cba3ff2f8ce2114defb200b1,
-      claimType: ClaimType.EQ,
-      value: 10
-    });
-    claims[3] = _claimRequestBuilder.build({
-      groupId: 0x1cde61966decb8600dfd0749bd371f12,
-      claimType: ClaimType.EQ,
-      value: 15,
-      isSelectableByUser: true,
-      isOptional: true
-    });
-    claims[4] = _claimRequestBuilder.build({
-      groupId: 0xfae674b6cba3ff2f8ce2114defb200b1,
-      claimType: ClaimType.GTE,
-      value: 6,
-      isOptional: true,
-      isSelectableByUser: true
-    });
-    claims[5] = _claimRequestBuilder.build({
-      groupId: 0x1cde61966decb8600dfd0749bd371f12,
-      claimType: ClaimType.EQ,
-      value: 15,
-      isOptional: true,
-      isSelectableByUser: true
-    });
-    claims[6] = _claimRequestBuilder.build({
-      groupId: 0xda1c3726426d5639f4c6352c2c976b87,
-      claimType: ClaimType.GTE,
-      value: 1,
-      isSelectableByUser: true,
-      isOptional: true
-    });
-
+  function claimWithSismo(bytes memory response) public {
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
-      auths: auths,
-      claims: claims,
-      signature: _signatureBuilder.build({message: abi.encode("I love Sismo!")})
+      // we want the user to prove that he owns a Sismo Vault
+      // we are recreating the auth request made in the frontend to be sure that
+      // the proofs provided in the response are valid with respect to this auth request
+      auth: buildAuth({authType: AuthType.VAULT}),
+      // we also want to check if the signed message provided in the response is the signature of the user's address
+      signature: buildSignature({message: abi.encode(msg.sender)})
     });
 
-    uint256 vaultId = SismoConnectHelper.getUserId(result, AuthType.VAULT);
-    uint256 githubId = SismoConnectHelper.getUserId(result, AuthType.GITHUB);
-    uint256 telegramId = SismoConnectHelper.getUserId(result, AuthType.TELEGRAM);
-    uint256[] memory evmAccountIds = SismoConnectHelper.getUserIds(result, AuthType.EVM_ACCOUNT);
+    // if the proofs and signed message are valid, we take the userId from the verified result
+    // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request),
+    // it is the anonymous identifier of a user's vault for a specific app
+    // --> vaultId = hash(userVaultSecret, appId)
+    uint256 vaultId = result.getUserId(AuthType.VAULT);
 
-    console.logBytes16(result.appId);
-    console.log("Vault ID: %s", vaultId);
-    console.log("Github ID: %s", githubId);
-    console.log("Telegram ID: %s", telegramId);
-    console.log("First EVM Account ID: %s", evmAccountIds[0]);
-    console.log("Second EVM Account ID: %s", evmAccountIds[1]);
+    // we check if the user has already claimed the airdrop
+    if (claimed[vaultId]) {
+      revert AlreadyClaimed();
+    }
+    // each vaultId can claim 100 tokens
+    uint256 airdropAmount = 100 * 10 ** 18;
+
+    // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
+    claimed[vaultId] = true;
+
+    // we mint the tokens to the user
+    _mint(msg.sender, airdropAmount);
   }
 }
