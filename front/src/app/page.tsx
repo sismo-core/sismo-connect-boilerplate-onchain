@@ -142,7 +142,7 @@ export default function Home() {
           onClick={() => openConnectModal?.()}
           disabled={connectModalOpen}
         >
-          {connectModalOpen ? "Connecting wallet..." : "Connect wallet to claim"}
+          {connectModalOpen ? "Connecting wallet..." : "Connect wallet"}
         </button>
         )}
 
