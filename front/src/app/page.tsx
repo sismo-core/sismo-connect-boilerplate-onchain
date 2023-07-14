@@ -132,7 +132,7 @@ export default function Home() {
     <>
       <main>
         <h1>
-          <b> Tutorial</b>
+          <b> Starter kit </b>
           <br />
           Sismo Connect onchain
         </h1>
