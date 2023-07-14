@@ -1,7 +1,13 @@
 {
   "abi": [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "bytes16",
+        "name": "appId",
+        "type": "bytes16"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },

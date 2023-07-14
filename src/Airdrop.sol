@@ -14,15 +14,9 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 contract Airdrop is SismoConnect {
   using SismoConnectHelper for SismoConnectVerifiedResult;
 
-  // reference your appId
-  bytes16 private _appId = 0x32403ced4b65f2079eda77c84e7d2be6;
-
   // allow impersonation
 
-  constructor()
-    // use buildConfig helper to easily build a Sismo Connect config in Solidity
-    SismoConnect(buildConfig({appId: _appId, isImpersonationMode: true}))
-  {}
+  constructor(bytes16 appId) SismoConnect(buildConfig({appId: appId, isImpersonationMode: true})) {}
 
   uint256 public number = 0;
 

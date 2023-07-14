@@ -12,7 +12,7 @@ contract DeployAirdrop is Script {
 
   function run() public {
     vm.startBroadcast();
-    new Airdrop();
+    new Airdrop(APP_ID);
     vm.stopBroadcast();
   }
 }
