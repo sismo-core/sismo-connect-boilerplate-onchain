@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "anvil": "anvil --fork-url https://gateway.tenderly.co/public/polygon-mumbai --chain-id 5151111",
+    "dev": "cd front; npm run dev",
     "deploy-local": "yarn deploy-airdrop && yarn generate-abi",
     "generate-abi": "front/script/generate-abi.sh",
     "deploy-airdrop": "forge script DeployAirdrop --rpc-url http://localhost:8545 -vv --mnemonics 'test test test test test test test test test test test junk' --sender '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' --broadcast",
