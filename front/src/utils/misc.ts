@@ -1,8 +1,6 @@
 import { encodeAbiParameters } from "viem";
-import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
-import { CHAIN } from "@/app/page";
 
 declare global {
   interface Window {
@@ -31,4 +29,3 @@ export const formatError = (error: Error | null) => {
   if (!error) return "";
   return error?.message?.split("args:")?.[0]?.split("data:")?.[0]?.trim() || "";
 };
-
