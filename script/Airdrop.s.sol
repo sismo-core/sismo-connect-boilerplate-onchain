@@ -12,8 +12,7 @@ contract DeployAirdrop is Script {
 
   function run() public {
     vm.startBroadcast();
-    Airdrop airdrop = new Airdrop("My airdrop contract", "AIR", APP_ID, isImpersonationMode);
-    console.log("Airdrop Contract deployed at", address(airdrop));
+    new Airdrop();
     vm.stopBroadcast();
   }
 }
