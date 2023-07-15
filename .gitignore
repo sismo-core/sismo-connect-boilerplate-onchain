@@ -56,4 +56,4 @@ docs/
 .env
 
 # Sismo connect config
-sismo-connect.json
+sismo-connect-config.json

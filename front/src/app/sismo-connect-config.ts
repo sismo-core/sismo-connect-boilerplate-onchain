@@ -39,7 +39,7 @@ export const AUTHS: AuthRequest[] = [
   //   authType: AuthType.EVM_ACCOUNT,
   // },
   { authType: AuthType.GITHUB },
-  { authType: AuthType.TWITTER, isOptional: true },
+  // { authType: AuthType.TWITTER, isOptional: true },
   // { authType: AuthType.TELEGRAM, userId: "875608110", isOptional: true },
 ];
 
