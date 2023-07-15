@@ -5,3 +5,4 @@ optimizer       = false                    # Enable or disable the solc optimize
 optimizer_runs  = 200                      # The number of optimizer runs
 verbosity       = 3                        # The verbosity of tests
 solc_version    = "0.8.20"                 # The solc version to use
+fs_permissions = [{ access = "read-write", path = "./"}]

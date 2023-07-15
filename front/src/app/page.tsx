@@ -18,28 +18,12 @@ import { formatError, signMessage } from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
 import {
   SismoConnectButton, // the Sismo Connect React button displayed below
-  SismoConnectConfig, // the Sismo Connect config with your appId
-  AuthType, // the authType enum, we will choose 'VAULT' in this tutorial
-  ClaimType, // the claimType enum, we will choose 'GTE' in this tutorial, to check that the user has a value greater than a given threshold
 } from "@sismo-core/sismo-connect-react";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
 import { errorsABI } from "@/utils/errorsABI";
+import { AUTHS, CLAIMS, CONFIG } from "@/app/sismo-connect-config";
 
-/* ***********************  Sismo Connect Config *************************** */
-
-// you can create a new Sismo Connect app at https://factory.sismo.io
-// The SismoConnectConfig is a configuration needed to connect to Sismo Connect and requests data from your users.
-
-const sismoConnectConfig: SismoConnectConfig = {
-  appId: "0xf4977993e52606cfd67b7a1cde717069",
-  vault: {
-    // For development purposes
-    // insert any account that you want to impersonate  here
-    // Never use this in production
-    impersonate: ["dhadrien.sismo.eth", "twitter:dhadrien_", "github:dhadrien"],
-  },
-};
 
 /* ********************  Defines the chain to use *************************** */
 const CHAIN = mumbaiFork;
@@ -155,11 +139,13 @@ export default function Home() {
             </p>
 
             <SismoConnectButton
-              // the client config created
-              config={sismoConnectConfig}
-              // the auth request we want to make
-              // here we want the proof of a Sismo Vault ownership from our users
-              auths={[{ authType: AuthType.VAULT }]}
+              config={CONFIG}
+              // Auths = Data Source Ownership Requests
+              auths={AUTHS}
+              // Claims = prove groump membership of a Data Source in a specific Data Group.
+              // Data Groups = [{[dataSource1]: value1}, {[dataSource1]: value1}, .. {[dataSource]: value}]
+              // When doing so Data Source is not shared to the app.
+              claims={CLAIMS}
               // we ask the user to sign a message
               // it will be used onchain to prevent frontrunning
               signature={{ message: signMessage(address!) }}

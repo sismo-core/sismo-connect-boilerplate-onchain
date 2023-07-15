@@ -21,6 +21,85 @@
         "internalType": "bool",
         "name": "isImpersonationMode",
         "type": "bool"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct AuthRequest[]",
+        "name": "authRequests",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct ClaimRequest[]",
+        "name": "claimRequests",
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "nonpayable",

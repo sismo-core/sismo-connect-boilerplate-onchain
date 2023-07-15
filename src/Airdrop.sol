@@ -17,12 +17,20 @@ contract Airdrop is ERC20, SismoConnect {
   using SismoConnectHelper for SismoConnectVerifiedResult;
   mapping(uint256 => bool) public claimed;
 
+  AuthRequest[] private _authRequests;
+  ClaimRequest[] private _claimRequests;
+
   constructor(
     string memory name,
     string memory symbol,
     bytes16 appId,
-    bool isImpersonationMode
-  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {}
+    bool isImpersonationMode,
+    AuthRequest[] memory authRequests,
+    ClaimRequest[] memory claimRequests
+  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {
+    _setAuths(authRequests);
+    _setClaims(claimRequests);
+  }
 
   function claimWithSismo(bytes memory response) public {
     SismoConnectVerifiedResult memory result = verify({
@@ -30,7 +38,8 @@ contract Airdrop is ERC20, SismoConnect {
       // we want the user to prove that he owns a Sismo Vault
       // we are recreating the auth request made in the frontend to be sure that
       // the proofs provided in the response are valid with respect to this auth request
-      auth: buildAuth({authType: AuthType.VAULT}),
+      auths: _authRequests,
+      claims: _claimRequests,
       // we also want to check if the signed message provided in the response is the signature of the user's address
       signature: buildSignature({message: abi.encode(msg.sender)})
     });
@@ -45,13 +54,24 @@ contract Airdrop is ERC20, SismoConnect {
     if (claimed[vaultId]) {
       revert AlreadyClaimed();
     }
-    // each vaultId can claim 100 tokens
-    uint256 airdropAmount = 100 * 10 ** 18;
 
     // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
     claimed[vaultId] = true;
 
+    uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
     // we mint the tokens to the user
     _mint(msg.sender, airdropAmount);
+  }
+
+  function _setAuths(AuthRequest[] memory auths) private {
+    for (uint256 i = 0; i < auths.length; i++) {
+      _authRequests.push(auths[i]);
+    }
+  }
+
+  function _setClaims(ClaimRequest[] memory claims) private {
+    for (uint256 i = 0; i < claims.length; i++) {
+      _claimRequests.push(claims[i]);
+    }
   }
 }
