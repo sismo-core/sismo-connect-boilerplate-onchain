@@ -54,6 +54,7 @@ export default function useContract({
     functionName: "claimWithSismo",
     args: [responseBytes],
     chain,
+    nonce: nonce || undefined,
     enabled: Boolean(responseBytes) && Boolean(typeof nonce === "number"),
   };
   const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
