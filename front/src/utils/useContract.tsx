@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Chain, formatEther } from "viem";
+import { Chain, TransactionReceipt, formatEther } from "viem";
 import {
   useAccount,
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
-  usePublicClient,
   useSwitchNetwork,
 } from "wagmi";
 import { waitForTransaction, readContract } from "@wagmi/core";
@@ -40,9 +39,6 @@ export default function useContract({
   const [verifiedClaims, setVerifiedClaims] = useState<VerifiedClaim[]>();
   const [verifiedAuths, setVerifiedAuths] = useState<VerifiedAuth[]>();
   const [verifiedSignedMessage, setVerifiedSignedMessage] = useState<string>();
-  const [nonce, setNonce] = useState<number | null>(null);
-
-  const publicClient = usePublicClient();
   const { chain: currentChain } = useNetwork();
   const { isConnected, address } = useAccount({
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
@@ -54,8 +50,7 @@ export default function useContract({
     functionName: "claimWithSismo",
     args: [responseBytes],
     chain,
-    nonce: nonce || undefined,
-    enabled: Boolean(responseBytes) && Boolean(typeof nonce === "number"),
+    enabled: Boolean(responseBytes),
   };
   const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
   const { writeAsync } = useContractWrite(config);
@@ -64,21 +59,6 @@ export default function useContract({
     if (!responseBytes) return;
     setPageState("responseReceived");
   }, [responseBytes]);
-
-  useEffect(() => {
-    if (!address) return;
-    if (currentChain?.id !== chain?.id) return;
-
-    const fetchNonce = async () => {
-      const nonce = await publicClient.getTransactionCount({
-        address: address || "0x00",
-        blockTag: "latest",
-      });
-      setNonce(nonce);
-    };
-
-    fetchNonce();
-  }, [address, chain, currentChain]);
 
   /* *************  Handle simulateContract call & chain errors ************ */
   useEffect(() => {
@@ -101,7 +81,25 @@ export default function useContract({
       setPageState("confirmingTransaction");
       const tx = await writeAsync?.();
       setPageState("verifying");
-      const txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
+      let txReceipt: TransactionReceipt | undefined;
+      if (chain.id === 5151111) {
+        const timeout = new Promise((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "Local fork error: operation timed out after 15 seconds, if you are running a local fork on Anvil please make sure to reset your wallet nonce."
+                )
+              ),
+            15000
+          )
+        );
+        const txReceiptPromise = tx && waitForTransaction({ hash: tx.hash });
+        const race = await Promise.race([txReceiptPromise, timeout]);
+        txReceipt = race as TransactionReceipt;
+      } else {
+        txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
+      }
       if (txReceipt?.status === "success") {
         setAmountClaimed(
           formatEther((await readAirdropContract("balanceOf", [address])) as unknown as bigint)
@@ -113,8 +111,6 @@ export default function useContract({
       }
     } catch (e: any) {
       setError(formatError(e));
-    } finally {
-      setNonce(null);
     }
   }
 

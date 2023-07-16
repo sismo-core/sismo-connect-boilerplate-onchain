@@ -2,25 +2,20 @@
 
 import { useState } from "react";
 import Header from "./components/Header";
-import {
-  useAccount,
-  useNetwork,
-  useSwitchNetwork,
-} from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { getProofDataForAuth, getProofDataForClaim, getuserIdFromHex, signMessage } from "@/utils/misc";
+import {
+  getProofDataForAuth,
+  getProofDataForClaim,
+  getuserIdFromHex,
+  signMessage,
+} from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
 import {
   SismoConnectButton, // the Sismo Connect React button displayed below
 } from "@sismo-core/sismo-connect-react";
 import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
-import {
-  AUTHS,
-  CLAIMS,
-  CONFIG,
-  AuthType,
-  ClaimType,
-} from "@/app/sismo-connect-config";
+import { AUTHS, CLAIMS, CONFIG, AuthType, ClaimType } from "@/app/sismo-connect-config";
 import useContract from "@/utils/useContract";
 
 /* ********************  Defines the chain to use *************************** */
@@ -116,7 +111,7 @@ export default function Home() {
             </div>
             {isConnected && !amountClaimed && error && (
               <>
-                <p>{error}</p>
+                <p style={{ color: "#ff6347" }}>{error}</p>
                 {error.slice(0, 16) === "Please switch to" && (
                   <button onClick={() => switchNetwork?.(CHAIN.id)}>Switch chain</button>
                 )}
@@ -281,4 +276,3 @@ export default function Home() {
     </>
   );
 }
-
