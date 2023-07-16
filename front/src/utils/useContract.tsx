@@ -45,7 +45,7 @@ export default function useContract({
   });
   const { switchNetworkAsync } = useSwitchNetwork();
   const contractCallInputs = {
-    address: transactions[0].contractAddress as `0x${string}}`,
+    address: transactions[0].contractAddress as `0x${string}`,
     abi: [...AirdropABI, ...errorsABI],
     functionName: "claimWithSismo",
     args: [responseBytes],
