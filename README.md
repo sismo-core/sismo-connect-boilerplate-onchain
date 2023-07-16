@@ -1,6 +1,14 @@
-# Sismo Connect - Onchain Boilerplate Repository
+# Sismo Connect Starter: onchain app with Next.js + Foundry
 
-This repository aims at providing a simple example on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
+Start developping an onchain application, with
+- a frontend making ZK proofs requests via Sismo Connect (Next.js)
+- a smart contract that verifies ZK Proofs received via Sismo Connect (Foundry)
+
+#### Support
+
+- [Documentation](https://docs.sismo.io)
+- [Telegram group](https://builders.sismo.io)
+
 
 ## Usage
 
@@ -31,7 +39,7 @@ forge install
 ```bash
 # in another terminal
 # starts a local fork of Mumbai
-yarn anvil
+yarn chain
 ```
 
 ### Launch the local application
@@ -52,7 +60,7 @@ yarn dev
 The frontend is now available on http://localhost:3000/ and the contracts have been deployed on your local blockchain.
 You can now experiment the user flow by going to your local frontend http://localhost:3000/.
 
-### Deploy your Airdrop contract
+### Deploy your contract
 
 With a private key, a RPC url and an etherscan api key:
 

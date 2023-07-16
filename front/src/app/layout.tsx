@@ -5,9 +5,8 @@ import { WagmiProvider } from "@/utils/wagmi";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "SafeDrop: Sybil-resistant airdrop from privately-aggregated data",
-  description:
-    "SafeDrop is a Sybil-resistant and privacy-preserving ERC20 airdrop that distributes AIR tokens to users proportionally based on their reputation, aggregated from diverse sources of data (wallets, Telegram, Twitter and GitHub accounts).",
+  title: "Sismo Connect Starter: onchain app with Next.js + Foundry",
+  description: "Start developping an onchain application, with Next.js, Foundry and Sismo Connect",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

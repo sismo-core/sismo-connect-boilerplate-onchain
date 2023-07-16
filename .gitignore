@@ -54,3 +54,6 @@ docs/
 
 # Dotenv file
 .env
+
+# Sismo connect config
+sismo-connect-config.json

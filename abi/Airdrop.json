@@ -21,10 +21,94 @@
         "internalType": "bool",
         "name": "isImpersonationMode",
         "type": "bool"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct AuthRequest[]",
+        "name": "authRequests",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct ClaimRequest[]",
+        "name": "claimRequests",
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "AlreadyClaimed",
+    "type": "error"
   },
   {
     "inputs": [
@@ -35,11 +119,6 @@
       }
     ],
     "name": "AuthTypeNotFoundInVerifiedResult",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UserNotEligibleForAirdrop",
     "type": "error"
   },
   {
@@ -120,19 +199,6 @@
   },
   {
     "inputs": [],
-    "name": "GITCOIN_PASSPORT_GROUP_ID",
-    "outputs": [
-      {
-        "internalType": "bytes16",
-        "name": "",
-        "type": "bytes16"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "IS_IMPERSONATION_MODE",
     "outputs": [
       {
@@ -146,64 +212,12 @@
   },
   {
     "inputs": [],
-    "name": "REWARD_BASE_VALUE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "SISMO_COMMUNITY_EARLY_MEMBERS",
-    "outputs": [
-      {
-        "internalType": "bytes16",
-        "name": "",
-        "type": "bytes16"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "SISMO_COMMUNITY_MEMBERS_GROUP_ID",
-    "outputs": [
-      {
-        "internalType": "bytes16",
-        "name": "",
-        "type": "bytes16"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "SISMO_CONNECT_LIB_VERSION",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "SISMO_FACTORY_USERS",
-    "outputs": [
-      {
-        "internalType": "bytes16",
-        "name": "",
-        "type": "bytes16"
       }
     ],
     "stateMutability": "view",
@@ -279,175 +293,6 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "isSelectableByUser",
-        "type": "bool"
-      }
-    ],
-    "name": "buildSignature",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes",
-            "name": "message",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct SignatureRequest",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "message",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "extraData",
-        "type": "bytes"
-      }
-    ],
-    "name": "buildSignature",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes",
-            "name": "message",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct SignatureRequest",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "isSelectableByUser",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "extraData",
-        "type": "bytes"
-      }
-    ],
-    "name": "buildSignature",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes",
-            "name": "message",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct SignatureRequest",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "message",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bool",
-        "name": "isSelectableByUser",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "extraData",
-        "type": "bytes"
-      }
-    ],
-    "name": "buildSignature",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes",
-            "name": "message",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct SignatureRequest",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "receiver",
-        "type": "address"
-      },
-      {
         "internalType": "bytes",
         "name": "response",
         "type": "bytes"
@@ -456,6 +301,25 @@
     "name": "claimWithSismo",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -525,6 +389,109 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVerifiedAuths",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "proofData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct VerifiedAuth[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVerifiedClaims",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256",
+            "name": "proofId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "proofData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct VerifiedClaim[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getVerifiedSignedMessage",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -641,40 +608,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "user",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes16",
-        "name": "groupId",
-        "type": "bytes16"
-      }
-    ],
-    "name": "userClaims",
-    "outputs": [
-      {
-        "internalType": "bytes16",
-        "name": "groupId",
-        "type": "bytes16"
-      },
-      {
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "claimed",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

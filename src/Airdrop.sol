@@ -8,127 +8,103 @@ import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
 /*
  * @title Airdrop
  * @author Sismo
- * @dev Simple Airdrop contract that mints ERC20 tokens to a receiver
+ * @dev Simple Airdrop contract that mints ERC20 tokens to the msg.sender
  * This contract is used for tutorial purposes only
  * It will be used to demonstrate how to integrate Sismo Connect
  */
 contract Airdrop is ERC20, SismoConnect {
+  error AlreadyClaimed();
   using SismoConnectHelper for SismoConnectVerifiedResult;
-  error UserNotEligibleForAirdrop();
+  mapping(uint256 => bool) public claimed;
 
-  struct StoredClaim {
-    bytes16 groupId;
-    uint256 value;
-    bool claimed;
-  }
+  AuthRequest[] private _authRequests;
+  ClaimRequest[] private _claimRequests;
 
-  mapping(uint256 user => mapping(bytes16 groupId => StoredClaim)) public userClaims;
-
-  bytes16 public constant GITCOIN_PASSPORT_GROUP_ID = 0x1cde61966decb8600dfd0749bd371f12;
-  bytes16 public constant SISMO_COMMUNITY_MEMBERS_GROUP_ID = 0xd630aa769278cacde879c5c0fe5d203c;
-  bytes16 public constant SISMO_COMMUNITY_EARLY_MEMBERS = 0xe4c011331d91b79639df349a93157a1b;
-  bytes16 public constant SISMO_FACTORY_USERS = 0x05629c9a54e30d8c8aea911a48cd9e30;
-  uint256 public constant REWARD_BASE_VALUE = 100 * 10 ** 18;
+  VerifiedAuth[] internal _verifiedAuths;
+  VerifiedClaim[] internal _verifiedClaims;
+  bytes internal _verifiedSignedMessage;
 
   constructor(
     string memory name,
     string memory symbol,
     bytes16 appId,
-    bool isImpersonationMode
-  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {}
-
-  function _getRewardAmount(
-    SismoConnectVerifiedResult memory result,
-    uint256 userId
-  ) private returns (uint256) {
-    uint256 airdropAmount = 0;
-
-    // we iterate over the claims returned by the Sismo Connect 
-    for (uint i = 0; i < result.claims.length; i++) {
-      VerifiedClaim memory verifiedClaim = result.claims[i];
-      bytes16 groupId = verifiedClaim.groupId;
-
-      StoredClaim storage userClaim = userClaims[userId][groupId];
-      userClaim.groupId = groupId;
-
-      // we check if the user is eligible for the airdrop
-      if (groupId == SISMO_COMMUNITY_MEMBERS_GROUP_ID) {
-        bool isClaimable = verifiedClaim.value > userClaim.value;
-        if (isClaimable) {
-          // if the user is eligible, we store the claim and add the airdrop value
-          // for SISMO_COMMUNITY_MEMBERS_GROUP_ID, the value is level in the community
-          airdropAmount += (verifiedClaim.value - userClaim.value) * REWARD_BASE_VALUE;
-          userClaim.claimed = true;
-          userClaim.value = verifiedClaim.value;
-          // store airdrop value
-        }
-      } else {
-        if (!userClaim.claimed) {
-          // if the user is eligible, we store the claim and add the airdrop value
-          airdropAmount += REWARD_BASE_VALUE;
-          userClaim.claimed = true;
-          userClaim.value = verifiedClaim.value;
-          // store airdrop value
-        }
-      }
-    }
-    return airdropAmount;
+    bool isImpersonationMode,
+    AuthRequest[] memory authRequests,
+    ClaimRequest[] memory claimRequests
+  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {
+    _setAuths(authRequests);
+    _setClaims(claimRequests);
   }
 
-  function claimWithSismo(address receiver, bytes memory response) public {
-    // we want to verify 4 claims and 1 auth request
+//   struct SismoConnectVerifiedResult {
+//   bytes16 appId;
+//   bytes16 namespace;
+//   bytes32 version;
+//   VerifiedAuth[] auths;
+//   VerifiedClaim[] claims;
+//   bytes signedMessage;
+// }
 
-    // we are recreating the auth request made in the frontend to be sure that
-    // the proofs provided in the response are valid with respect to this auth request
-    AuthRequest[] memory auths = new AuthRequest[](1);
-    auths[0] = buildAuth({authType: AuthType.VAULT});
-
-
-    // we want to verify 4 claims
-    // we are recreating the claims made in the frontend to be sure that
-    // the proofs provided in the response are valid with respect to these claims
-    ClaimRequest[] memory claims = new ClaimRequest[](4);
-    claims[0] = buildClaim({
-      groupId: GITCOIN_PASSPORT_GROUP_ID,
-      claimType: ClaimType.GTE,
-      value: 15
-    });
-    claims[1] = buildClaim({
-      groupId: SISMO_COMMUNITY_MEMBERS_GROUP_ID,
-      isSelectableByUser: true,
-      isOptional: false
-    });
-    claims[2] = buildClaim({
-      groupId: SISMO_COMMUNITY_EARLY_MEMBERS,
-      isSelectableByUser: false,
-      isOptional: true
-    });
-    claims[3] = buildClaim({
-      groupId: SISMO_FACTORY_USERS,
-      isSelectableByUser: false,
-      isOptional: true
-    });
-
-    // we verify the response
+  function claimWithSismo(bytes memory response) public {
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
       // we want the user to prove that he owns a Sismo Vault
-      auths: auths,
-      claims: claims,
+      // we are recreating the auth request made in the frontend to be sure that
+      // the proofs provided in the response are valid with respect to this auth request
+      auths: _authRequests,
+      claims: _claimRequests,
       // we also want to check if the signed message provided in the response is the signature of the user's address
-      signature: buildSignature({message: abi.encode(receiver)})
+      signature: buildSignature({message: abi.encode(msg.sender)})
     });
 
+    for (uint256 i = 0; i < result.auths.length; i++) {
+      _verifiedAuths.push(result.auths[i]);
+    }
+    for (uint256 i = 0; i < result.claims.length; i++) {
+      _verifiedClaims.push(result.claims[i]);
+    }
+
+    _verifiedSignedMessage =result.signedMessage;
+
     // if the proofs and signed message are valid, we take the userId from the verified result
-    // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request), the anonymous identifier of a user's vault for a specific app --> userId = hash(userVaultSecret, appId)
-    uint256 userId = result.getUserId(AuthType.VAULT);
+    // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request),
+    // it is the anonymous identifier of a user's vault for a specific app
+    // --> vaultId = hash(userVaultSecret, appId)
+    uint256 vaultId = result.getUserId(AuthType.VAULT);
 
-    //we get the airdrop amount from the verified result based on the number of claims and auths that were verified
-    uint256 airdropAmount = _getRewardAmount(result, userId);
+    // we check if the user has already claimed the airdrop
+    // if (claimed[vaultId]) {
+    //   revert AlreadyClaimed();
+    // }
 
-    if (airdropAmount == 0) revert UserNotEligibleForAirdrop();
+    // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
+    claimed[vaultId] = true;
 
-    // we mint the tokens to the user
-    _mint(receiver, airdropAmount);
+    uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
+    _mint(msg.sender, airdropAmount);
+  }
+
+  function _setAuths(AuthRequest[] memory auths) private {
+    for (uint256 i = 0; i < auths.length; i++) {
+      _authRequests.push(auths[i]);
+    }
+  }
+
+  function _setClaims(ClaimRequest[] memory claims) private {
+    for (uint256 i = 0; i < claims.length; i++) {
+      _claimRequests.push(claims[i]);
+    }
+  }
+
+  function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
+    return _verifiedClaims;
+  }
+
+  function getVerifiedAuths() external view returns (VerifiedAuth[] memory) {
+    return _verifiedAuths;
+  }
+
+  function getVerifiedSignedMessage() external view returns (bytes memory) {
+    return _verifiedSignedMessage;
   }
 }

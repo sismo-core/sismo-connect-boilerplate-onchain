@@ -1,19 +1,27 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
+import "sismo-connect-solidity/SismoLib.sol";
+import {SismoConnectConfigReader} from "./utils/SismoConnectConfigReader.sol";
 import {Airdrop} from "src/Airdrop.sol";
 
-contract DeployAirdrop is Script {
-  // the appId from the Sismo Connect App we want to use
-  bytes16 public constant APP_ID = 0xf4977993e52606cfd67b7a1cde717069;
-  bool isImpersonationMode = true; // <--- set to true to allow verifying proofs from impersonated accounts
+contract DeployAirdrop is Script, SismoConnectConfigReader {
+  using stdJson for string;
 
   function run() public {
+    console.log("Deploying Airdrop contract");
+    string memory json = vm.readFile(string.concat(vm.projectRoot(), "/sismo-connect-config.json"));
+    (
+      bytes16 appId,
+      AuthRequest[] memory authRequests,
+      ClaimRequest[] memory claimRequests,
+      bool isImpersonationMode
+    ) = readSismoConnectRequest(json);
+
     vm.startBroadcast();
-    Airdrop airdrop = new Airdrop("My airdrop contract", "AIR", APP_ID, isImpersonationMode);
-    console.log("Airdrop Contract deployed at", address(airdrop));
+    new Airdrop("my Airdrop", "AIR", appId, isImpersonationMode, authRequests, claimRequests);
     vm.stopBroadcast();
   }
 }
