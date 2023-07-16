@@ -10,6 +10,11 @@
     "config-to-json": "npx tsx ./script/sismo-config-to-json.ts > ../sismo-connect-config.json",
     "deploy-airdrop": "forge script DeployAirdrop --rpc-url http://localhost:8545 -vv --mnemonics 'test test test test test test test test test test test junk' --sender '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266' --broadcast &&  ./script/generate-abi-from-front.sh"
   },
+  "browser": {
+    "fs": false,
+    "net": false,
+    "tls": false
+  },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^1.0.2",
     "@sismo-core/sismo-connect-react": "0.0.18",
