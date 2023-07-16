@@ -1,6 +1,14 @@
-# Sismo Connect - Onchain Boilerplate Repository
+# Sismo Connect Starter: onchain app with Next.js + Foundry
 
-This repository aims at providing a simple example on how to integrate Sismo Connect onchain while allowing you to test the integration locally as easily as possible.
+Start developping an onchain application, with
+- a frontend making ZK proofs requests via Sismo Connect (Next.js)
+- a smart contract that verifies ZK Proofs received via Sismo Connect (Foundry)
+
+#### Support
+
+- [Documentation](https://docs.sismo.io)
+- [Telegram group](https://builders.sismo.io)
+
 
 ## Usage
 

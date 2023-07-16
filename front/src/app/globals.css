@@ -1,26 +1,202 @@
 * {
   box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif; /* Added a basic font fallback */
 }
+
+.main {
+  margin: 5vh auto;
+  padding: 2em; 
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 90%; /* Here we're setting the main content to take up 90% of the viewport's width. */
+  max-width: 1200px; /* This will prevent the content from becoming too wide on large screens. */
+  background-color: #282c34; /* change this to the color you prefer */
+  border-radius: 8px; /* adds rounded corners */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* adds slight shadow for a "lifted" effect */
+}
+
+
+.error {
+  border: 1px solid red;
+  padding: 12px;
+  border-radius: 5px;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: red;
+  margin: 0 auto;
+}
+
 
 html,
 body {
   max-width: 100vw;
-  min-height: 100vh;
+  height: 100vh;
   overflow-x: hidden;
-  background-color: #0E1528;
+  font-size: 16px; /* Base font size for rem units */
+  color: #fff;
+  background-color: #000;
 }
 
 body {
-  color: #E9EBF6;
-  background: linear-gradient(288.33deg, #0E1528 -0.59%, #060912 97.77%);
-  padding: 88px 60px !important;
+  padding: 2rem; /* Give a little breathing room around the body content */
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+  color: #ff6347; /* Tomato color as an example, feel free to change */
+  text-decoration: none; /* Removes underline from links */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+a:hover,
+a:focus {
+  color: #ff4500; /* Darker orange color on hover and focus, feel free to change */
+  text-decoration: none; /* Keeps the underline off on hover/focus */
+}
+
+a:active {
+  color: #ff8c00; /* Even darker orange color when actively clicking, feel free to change */
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.5; /* Make the paragraphs more readable */
+  margin-bottom: 1rem;
+}
+
+ul {
+  padding-left: 1rem;
+}
+
+button {
+  padding: 1rem 2rem; /* Make the button a little larger */
+  font-size: 1rem;
+  margin: 2rem auto;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #333; /* Give the button a color so it's more noticeable */
+  color: #fff;
+}
+
+label {
+  margin-bottom: 10px;
+  font-weight: 700;
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+thead {
+  background-color: #333;
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background-color: #222;
+}
+
+tr:hover {
+  background-color: #555;
+}
+
+input {
+  font-size: 1rem;
+  width: 100%;
+  height: 3.3rem;
+  border-radius: .6rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background-color: transparent;
+  backdrop-filter: blur(20px);
+  padding: 0 1rem;
+  margin-bottom: 1rem; /* Add some space below each input */
+}
+
+input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 1);
+}
+
+.code-snippet {
+  display: inline-block;
+  color: #333; 
+  background-color: #f9f9f9;
+  font-family: 'Courier New', monospace;
+  font-size: 1em;
+  padding: 2px 6px;
+  margin: 2px 0;
+  border-radius: 3px;
 }
 
 
+.callout {
+  color: #d3d3d3; /* Light gray color */
+  padding: 1rem; /* Adds some space around the text */
+  border: 1px solid #d3d3d3; /* Adds a light gray border */
+  border-radius: 5px; /* Rounds the corners of the border */
+  background-color: rgba(0,0,0,0.1); /* Adds a very light black background to increase readability of gray text */
+}
+
+.verifying, .verified {
+  display: inline-block;
+  padding: 0.5em 1em; /* Padding around the text */
+  border-radius: 5px; /* Slightly rounded corners for a softer look */
+  font-size: 1.2em; /* Slightly larger text for emphasis */
+  text-align: center; /* Center the text within the element */
+  width: max-content; /* Add this line */
+
+}
+
+.verifying {
+  color: #666666; /* Dark grey text */
+  background-color: #f3f3f3; /* Light grey background */
+  border: 2px solid #cccccc; /* Light grey border */
+  animation: fade 1s ease-in-out infinite; /* Gentle fade in and out */
+}
+
+@keyframes fade {
+  0% {opacity: 1;}
+  50% {opacity: 0.6;}
+  100% {opacity: 1;}
+}
+
+.verified {
+  color: #ffffff; /* White text */
+  background-color: #4CAF50; /* Green background, you can replace it with any success color */
+  border: 2px solid #4CAF50; /* Border color same as background */
+}
+
+.status-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+}

@@ -20,6 +20,10 @@ contract Airdrop is ERC20, SismoConnect {
   AuthRequest[] private _authRequests;
   ClaimRequest[] private _claimRequests;
 
+  VerifiedAuth[] internal _verifiedAuths;
+  VerifiedClaim[] internal _verifiedClaims;
+  bytes internal _verifiedSignedMessage;
+
   constructor(
     string memory name,
     string memory symbol,
@@ -31,6 +35,15 @@ contract Airdrop is ERC20, SismoConnect {
     _setAuths(authRequests);
     _setClaims(claimRequests);
   }
+
+//   struct SismoConnectVerifiedResult {
+//   bytes16 appId;
+//   bytes16 namespace;
+//   bytes32 version;
+//   VerifiedAuth[] auths;
+//   VerifiedClaim[] claims;
+//   bytes signedMessage;
+// }
 
   function claimWithSismo(bytes memory response) public {
     SismoConnectVerifiedResult memory result = verify({
@@ -44,6 +57,15 @@ contract Airdrop is ERC20, SismoConnect {
       signature: buildSignature({message: abi.encode(msg.sender)})
     });
 
+    for (uint256 i = 0; i < result.auths.length; i++) {
+      _verifiedAuths.push(result.auths[i]);
+    }
+    for (uint256 i = 0; i < result.claims.length; i++) {
+      _verifiedClaims.push(result.claims[i]);
+    }
+
+    _verifiedSignedMessage =result.signedMessage;
+
     // if the proofs and signed message are valid, we take the userId from the verified result
     // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request),
     // it is the anonymous identifier of a user's vault for a specific app
@@ -51,15 +73,14 @@ contract Airdrop is ERC20, SismoConnect {
     uint256 vaultId = result.getUserId(AuthType.VAULT);
 
     // we check if the user has already claimed the airdrop
-    if (claimed[vaultId]) {
-      revert AlreadyClaimed();
-    }
+    // if (claimed[vaultId]) {
+    //   revert AlreadyClaimed();
+    // }
 
     // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
     claimed[vaultId] = true;
 
     uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
-    // we mint the tokens to the user
     _mint(msg.sender, airdropAmount);
   }
 
@@ -73,5 +94,17 @@ contract Airdrop is ERC20, SismoConnect {
     for (uint256 i = 0; i < claims.length; i++) {
       _claimRequests.push(claims[i]);
     }
+  }
+
+  function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
+    return _verifiedClaims;
+  }
+
+  function getVerifiedAuths() external view returns (VerifiedAuth[] memory) {
+    return _verifiedAuths;
+  }
+
+  function getVerifiedSignedMessage() external view returns (bytes memory) {
+    return _verifiedSignedMessage;
   }
 }
