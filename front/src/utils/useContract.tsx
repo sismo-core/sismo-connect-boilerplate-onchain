@@ -91,7 +91,7 @@ export default function useContract({
                   "Local fork error: operation timed out after 15 seconds, if you are running a local fork on Anvil please make sure to reset your wallet nonce."
                 )
               ),
-            15000
+            10000
           )
         );
         const txReceiptPromise = tx && waitForTransaction({ hash: tx.hash });
