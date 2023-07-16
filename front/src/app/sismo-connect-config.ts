@@ -7,8 +7,10 @@ import {
   VerifiedAuth,
   VerifiedClaim,
 } from "@sismo-core/sismo-connect-client";
+import { SignatureRequest } from "@sismo-core/sismo-connect-react";
 
-export { ClaimType, AuthType, VerifiedAuth, VerifiedClaim };
+export { ClaimType, AuthType };
+export type { VerifiedAuth, VerifiedClaim };
 export const CONFIG: SismoConnectConfig = {
   appId: "0x32403ced4b65f2079eda77c84e7d2be6",
   vault: {
