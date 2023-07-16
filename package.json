@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "local-fork-mumbai": "anvil --fork-url https://gateway.tenderly.co/public/polygon-mumbai --chain-id 5151111",
+    "chain": "anvil --fork-url https://gateway.tenderly.co/public/polygon-mumbai --chain-id 5151111",
     "dev": "cd front; npm run dev",
     "deploy-local": "yarn deploy-airdrop && yarn generate-abi",
     "generate-abi": "front/script/generate-abi.sh",

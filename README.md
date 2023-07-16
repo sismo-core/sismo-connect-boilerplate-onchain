@@ -31,7 +31,7 @@ forge install
 ```bash
 # in another terminal
 # starts a local fork of Mumbai
-yarn anvil
+yarn chain
 ```
 
 ### Launch the local application
@@ -52,7 +52,7 @@ yarn dev
 The frontend is now available on http://localhost:3000/ and the contracts have been deployed on your local blockchain.
 You can now experiment the user flow by going to your local frontend http://localhost:3000/.
 
-### Deploy your Airdrop contract
+### Deploy your contract
 
 With a private key, a RPC url and an etherscan api key:
 
