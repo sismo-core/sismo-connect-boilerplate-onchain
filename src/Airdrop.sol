@@ -3,23 +3,30 @@ pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "forge-std/console.sol";
-import "sismo-connect-solidity/SismoLib.sol"; // <--- add a Sismo Connect import
+import "sismo-connect-solidity/SismoLib.sol";
 
 /*
  * @title Airdrop
  * @author Sismo
- * @dev Simple Airdrop contract that mints ERC20 tokens to the msg.sender
- * This contract is used for tutorial purposes only
- * It will be used to demonstrate how to integrate Sismo Connect
+ * @dev Simple Airdrop contract gated by Sismo Connect
+ * Application requests multiple zk proofs (auths and claims) and verify them
+ * The contract stores all verified results in storage
  */
 contract Airdrop is ERC20, SismoConnect {
   error AlreadyClaimed();
+  event AuthVerified(VerifiedAuth verifiedAuth);
+  event ClaimVerified(VerifiedClaim verifiedClaim);
+  event SignedMessageVerified(bytes verifiedSignedMessage);
   using SismoConnectHelper for SismoConnectVerifiedResult;
   mapping(uint256 => bool) public claimed;
 
+  // must correspond to requests defined in the app frontend
+  // Sismo Connect response's zk proofs will be checked against these requests.
+  // check Airdrop.s.sol to see how these requests are built and passed to the constructor
   AuthRequest[] private _authRequests;
   ClaimRequest[] private _claimRequests;
 
+  // Results of the verification of the Sismo Connect response.
   VerifiedAuth[] internal _verifiedAuths;
   VerifiedClaim[] internal _verifiedClaims;
   bytes internal _verifiedSignedMessage;
@@ -36,52 +43,58 @@ contract Airdrop is ERC20, SismoConnect {
     _setClaims(claimRequests);
   }
 
-//   struct SismoConnectVerifiedResult {
-//   bytes16 appId;
-//   bytes16 namespace;
-//   bytes32 version;
-//   VerifiedAuth[] auths;
-//   VerifiedClaim[] claims;
-//   bytes signedMessage;
-// }
-
   function claimWithSismo(bytes memory response) public {
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
-      // we want the user to prove that he owns a Sismo Vault
-      // we are recreating the auth request made in the frontend to be sure that
-      // the proofs provided in the response are valid with respect to this auth request
+      // checking response against requested auths
       auths: _authRequests,
+      // checking response against requested claims
       claims: _claimRequests,
-      // we also want to check if the signed message provided in the response is the signature of the user's address
+      // checking response against requested message signature
       signature: buildSignature({message: abi.encode(msg.sender)})
     });
 
+    // it is the anonymous identifier of a user's vault for a specific app
+    // --> vaultId = hash(userVaultSecret, appId)
+    // used to avoid double claims
+    uint256 vaultId = result.getUserId(AuthType.VAULT);
+
+    // checking if the user has already claimed
+    if (claimed[vaultId]) {
+      revert AlreadyClaimed();
+    }
+
+    // marking that the user has claimed
+    claimed[vaultId] = true;
+
+    // airdrop amount = number of verified proofs
+    uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
+    _mint(msg.sender, airdropAmount);
+
+    // storing the result of the verification
     for (uint256 i = 0; i < result.auths.length; i++) {
       _verifiedAuths.push(result.auths[i]);
+      emit AuthVerified(result.auths[i]);
     }
     for (uint256 i = 0; i < result.claims.length; i++) {
       _verifiedClaims.push(result.claims[i]);
+      emit ClaimVerified(result.claims[i]);
     }
-
     _verifiedSignedMessage =result.signedMessage;
+    emit SignedMessageVerified(result.signedMessage);
+  }
 
-    // if the proofs and signed message are valid, we take the userId from the verified result
-    // in this case the userId is the vaultId (since we used AuthType.VAULT in the auth request),
-    // it is the anonymous identifier of a user's vault for a specific app
-    // --> vaultId = hash(userVaultSecret, appId)
-    uint256 vaultId = result.getUserId(AuthType.VAULT);
 
-    // we check if the user has already claimed the airdrop
-    // if (claimed[vaultId]) {
-    //   revert AlreadyClaimed();
-    // }
+  function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
+    return _verifiedClaims;
+  }
 
-    // we mark the user as claimed. We could also have stored more user airdrop information for a more complex airdrop system. But we keep it simple here.
-    claimed[vaultId] = true;
+  function getVerifiedAuths() external view returns (VerifiedAuth[] memory) {
+    return _verifiedAuths;
+  }
 
-    uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
-    _mint(msg.sender, airdropAmount);
+  function getVerifiedSignedMessage() external view returns (bytes memory) {
+    return _verifiedSignedMessage;
   }
 
   function _setAuths(AuthRequest[] memory auths) private {
@@ -96,15 +109,4 @@ contract Airdrop is ERC20, SismoConnect {
     }
   }
 
-  function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
-    return _verifiedClaims;
-  }
-
-  function getVerifiedAuths() external view returns (VerifiedAuth[] memory) {
-    return _verifiedAuths;
-  }
-
-  function getVerifiedSignedMessage() external view returns (bytes memory) {
-    return _verifiedSignedMessage;
-  }
 }

@@ -33,6 +33,15 @@ const Header: React.FC = () => {
           <b className="code-snippet">src/Airdrop.sol</b>: Contract - verify Sismo Connect request,
           mint tokens and stores verified claims and auths
         </p>
+        <p className="callout">
+          {" "}
+          Notes: <br />
+          1. If you are using metamask and transactions hang. Go to settings > advanced > clear activity and nonce data <br />
+          2. First ZK Proof generation takes longer time, especially with bad internet as there is a
+          zkey file to download once in the data vault connection <br />
+          3. The more proofs you request, the longer it takes to generate them (about 2 secs per
+          proof)
+        </p>
       </div>
     </>
   );

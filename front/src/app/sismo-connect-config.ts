@@ -35,6 +35,7 @@ export const CONFIG: SismoConnectConfig = {
   // Sismo Connect Response in the vault instead of redirecting back to the app
 };
 
+// Request users to prove ownership of a Data Source (Wallet, Twitter, Github, Telegram, etc.)
 export const AUTHS: AuthRequest[] = [
   // Anonymous identifier of the vault for this app
   // vaultId = hash(vaultSecret, appId).
@@ -46,6 +47,7 @@ export const AUTHS: AuthRequest[] = [
   // { authType: AuthType.TELEGRAM, userId: "875608110", isOptional: true },
 ];
 
+// Request users to prove membership in a Data Group (e.g I own a wallet that is part of a DAO, owns an NFT, etc.)
 export const CLAIMS: ClaimRequest[] = [
   {
     // claim on Sismo Hub GitHub Contributors Data Group membership: https://factory.sismo.io/groups-explorer?search=0xda1c3726426d5639f4c6352c2c976b87
@@ -71,11 +73,12 @@ export const CLAIMS: ClaimRequest[] = [
     // request user to prove membership in the group with value = 10
     groupId: "0xfae674b6cba3ff2f8ce2114defb200b1",
     claimType: ClaimType.EQ,
-    value: 10, // dhadrin.sismo.eth minted exactly 10, eligible
+    value: 10, // dhadrien.sismo.eth minted exactly 10, eligible
     isOptional: true,
   },
 ];
 
+// Request users to sign a message
 export const SIGNATURE_REQUEST: SignatureRequest = {
   message: "I love Sismo!",
   isSelectableByUser: true,

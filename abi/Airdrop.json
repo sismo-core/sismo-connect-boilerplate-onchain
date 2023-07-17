@@ -150,6 +150,109 @@
     "anonymous": false,
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "proofData",
+            "type": "bytes"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct VerifiedAuth",
+        "name": "verifiedAuth",
+        "type": "tuple"
+      }
+    ],
+    "name": "AuthVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256",
+            "name": "proofId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "proofData",
+            "type": "bytes"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct VerifiedClaim",
+        "name": "verifiedClaim",
+        "type": "tuple"
+      }
+    ],
+    "name": "ClaimVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "verifiedSignedMessage",
+        "type": "bytes"
+      }
+    ],
+    "name": "SignedMessageVerified",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "from",
