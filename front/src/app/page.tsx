@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
+  formatError,
   getProofDataForAuth,
   getProofDataForClaim,
   getUserIdFromHex,
@@ -12,17 +13,34 @@ import {
 } from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
 import {
-  SismoConnectButton, // the Sismo Connect React button displayed below
+  SismoConnectButton,
+  VerifiedAuth,
+  VerifiedClaim, // the Sismo Connect React button displayed below
 } from "@sismo-core/sismo-connect-react";
 import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
 import { AUTHS, CLAIMS, CONFIG, AuthType, ClaimType } from "@/app/sismo-connect-config";
 import useContract from "@/utils/useContract";
+import { formatEther } from "viem";
 
 /* ********************  Defines the chain to use *************************** */
 const CHAIN = mumbaiFork;
 
 export default function Home() {
+  const [appState, setAppState] = useState<{
+    pageState: string;
+    amountClaimed: string;
+    verifiedClaims: VerifiedClaim[] | undefined;
+    verifiedAuths: VerifiedAuth[] | undefined;
+    verifiedSignedMessage: string | undefined;
+  }>({
+    pageState: "init",
+    amountClaimed: "",
+    verifiedClaims: undefined,
+    verifiedAuths: undefined,
+    verifiedSignedMessage: undefined,
+  });
   const [responseBytes, setResponseBytes] = useState<string | null>(null);
+  const [claimError, setClaimError] = useState<string | null>(null);
   const { isConnected, address } = useAccount({
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
   });
@@ -30,21 +48,70 @@ export default function Home() {
   const { switchNetwork } = useSwitchNetwork();
   const { openConnectModal, connectModalOpen } = useConnectModal();
 
-  const {
-    claimAirdrop,
-    reset,
-    amountClaimed,
-    error,
-    pageState,
-    verifiedAuths,
-    verifiedClaims,
-    verifiedSignedMessage,
-  } = useContract({ responseBytes, chain: CHAIN });
+  const { airdropContract, switchNetworkAsync, waitingForTransaction, error } = useContract({
+    responseBytes,
+    chain: CHAIN,
+  });
+
+  useEffect(() => {
+    if (!responseBytes) return;
+    setAppState((prev) => {
+      return { ...prev, pageState: "responseReceived" };
+    });
+  }, [responseBytes]);
 
   /* *************************  Reset state **************************** */
   function resetApp() {
-    reset();
+    setAppState({
+      pageState: "init",
+      amountClaimed: "",
+      verifiedClaims: undefined,
+      verifiedAuths: undefined,
+      verifiedSignedMessage: undefined,
+    });
+    setClaimError("");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("sismoConnectResponseCompressed");
+    window.history.replaceState({}, "", url.toString());
     setResponseBytes("");
+  }
+
+  /* ************  Handle the airdrop claim button click ******************* */
+  async function claimAirdrop() {
+    if (!address) return;
+    setClaimError("");
+    try {
+      if (chain?.id !== CHAIN.id) await switchNetworkAsync?.(CHAIN.id);
+      setAppState((prev) => {
+        return { ...prev, pageState: "confirmingTransaction" };
+      });
+      const hash = await airdropContract.write.claimWithSismo([responseBytes, address]);
+      setAppState((prev) => {
+        return { ...prev, pageState: "verifying" };
+      });
+      let txReceipt = await waitingForTransaction(hash);
+      if (txReceipt?.status === "success") {
+        const amountClaimed = formatEther(
+          (await airdropContract.read.balanceOf([address])) as bigint
+        );
+        const verifiedClaims = (await airdropContract.read.getVerifiedClaims()) as VerifiedClaim[];
+        const verifiedAuths = (await airdropContract.read.getVerifiedAuths()) as VerifiedAuth[];
+        const verifiedSignedMessage =
+          (await airdropContract.read.getVerifiedSignedMessage()) as string;
+        setAppState((prev) => {
+          return {
+            ...prev,
+            amountClaimed,
+            verifiedClaims,
+            verifiedAuths,
+            verifiedSignedMessage,
+            pageState: "verified",
+          };
+        });
+      }
+    } catch (e: any) {
+      setClaimError(formatError(e));
+    }
   }
 
   return (
@@ -60,14 +127,14 @@ export default function Home() {
           <>
             <>
               {" "}
-              {pageState != "init" && <button onClick={() => resetApp()}>Reset</button>}
+              {appState.pageState != "init" && <button onClick={() => resetApp()}>Reset</button>}
               <p>
                 <b>{`Chain: ${chain?.name} [${chain?.id}]`}</b>
                 <br />
                 <b>Your airdrop destination address is: {address}</b>
               </p>
             </>
-            {pageState == "init" && (
+            {appState.pageState == "init" && (
               <>
                 <SismoConnectButton
                   config={CONFIG}
@@ -90,18 +157,20 @@ export default function Home() {
               </>
             )}
             <div className="status-wrapper">
-              {pageState == "responseReceived" && (
+              {appState.pageState == "responseReceived" && (
                 <button onClick={() => claimAirdrop()}>{"Claim"}</button>
               )}
-              {pageState == "confirmingTransaction" && (
+              {appState.pageState == "confirmingTransaction" && (
                 <button disabled={true}>{"Confirm tx in wallet"}</button>
               )}
-              {pageState == "verifying" && (
+              {appState.pageState == "verifying" && (
                 <span className="verifying"> Verifying ZK Proofs onchain... </span>
               )}
-              {pageState == "verified" && <span className="verified"> ZK Proofs Verified! </span>}
+              {appState.pageState == "verified" && (
+                <span className="verified"> ZK Proofs Verified! </span>
+              )}
             </div>
-            {isConnected && !amountClaimed && error && (
+            {isConnected && !appState.amountClaimed && (error || claimError) && (
               <>
                 <p style={{ color: "#ff6347" }}>{error}</p>
                 {error.slice(0, 16) === "Please switch to" && (
@@ -111,10 +180,10 @@ export default function Home() {
             )}
             {/* Table of the Sismo Connect requests and verified result */}
             {/* Table for Verified Auths */}
-            {verifiedAuths && (
+            {appState.verifiedAuths && (
               <>
                 <p>
-                  {amountClaimed} tokens were claimed in total on {address}.
+                  {appState.amountClaimed} tokens were claimed in total on {address}.
                 </p>
                 <h3>Verified Auths</h3>
                 <table>
@@ -125,7 +194,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {verifiedAuths.map((auth, index) => (
+                    {appState.verifiedAuths.map((auth, index) => (
                       <tr key={index}>
                         <td>{AuthType[auth.authType]}</td>
                         <td>
@@ -141,7 +210,7 @@ export default function Home() {
             )}
             <br />
             {/* Table for Verified Claims */}
-            {verifiedClaims && (
+            {appState.verifiedClaims && (
               <>
                 <h3>Verified Claims</h3>
                 <table>
@@ -153,7 +222,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {verifiedClaims.map((claim, index) => (
+                    {appState.verifiedClaims.map((claim, index) => (
                       <tr key={index}>
                         <td>
                           <a
@@ -190,8 +259,10 @@ export default function Home() {
                     <td>{AuthType[auth.authType]}</td>
                     <td>{auth.userId || "No userId requested"}</td>
                     <td>{auth.isOptional ? "optional" : "required"}</td>
-                    {verifiedAuths ? (
-                      <td>{getProofDataForAuth(verifiedAuths, auth.authType)!.toString()}</td>
+                    {appState.verifiedAuths ? (
+                      <td>
+                        {getProofDataForAuth(appState.verifiedAuths, auth.authType)!.toString()}
+                      </td>
                     ) : (
                       <td> ZK proof not generated yet </td>
                     )}
@@ -228,11 +299,11 @@ export default function Home() {
                     <td>{claim.value ? claim.value : "1"}</td>
                     <td>{claim.isSelectableByUser ? "yes" : "no"}</td>
                     <td>{claim.isOptional ? "optional" : "required"}</td>
-                    {verifiedClaims ? (
+                    {appState.verifiedClaims ? (
                       <td>
                         {
                           getProofDataForClaim(
-                            verifiedClaims!,
+                            appState.verifiedClaims!,
                             claim.claimType || 0,
                             claim.groupId!,
                             claim.value || 1
@@ -258,7 +329,11 @@ export default function Home() {
               <tbody>
                 <tr>
                   <td>{{ message: signMessage(address!) }.message}</td>
-                  <td>{verifiedSignedMessage ? verifiedSignedMessage : "ZK Proof not verified"}</td>
+                  <td>
+                    {appState.verifiedSignedMessage
+                      ? appState.verifiedSignedMessage
+                      : "ZK Proof not verified"}
+                  </td>
                 </tr>
               </tbody>
             </table>
