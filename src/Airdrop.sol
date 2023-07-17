@@ -13,12 +13,10 @@ import "sismo-connect-solidity/SismoLib.sol";
  * The contract stores all verified results in storage
  */
 contract Airdrop is ERC20, SismoConnect {
-  error AlreadyClaimed();
   event AuthVerified(VerifiedAuth verifiedAuth);
   event ClaimVerified(VerifiedClaim verifiedClaim);
   event SignedMessageVerified(bytes verifiedSignedMessage);
   using SismoConnectHelper for SismoConnectVerifiedResult;
-  mapping(uint256 => bool) public claimed;
 
   // must correspond to requests defined in the app frontend
   // Sismo Connect response's zk proofs will be checked against these requests.

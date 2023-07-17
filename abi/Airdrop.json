@@ -106,11 +106,6 @@
     "type": "constructor"
   },
   {
-    "inputs": [],
-    "name": "AlreadyClaimed",
-    "type": "error"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -398,25 +393,6 @@
     "name": "claimWithSismo",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimed",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
