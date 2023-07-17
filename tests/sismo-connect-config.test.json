@@ -1,0 +1,33 @@
+{
+  "appId": "0x32403ced4b65f2079eda77c84e7d2be6",
+  "isImpersonationMode": true,
+  "authRequests": [
+    {
+      "authType": 0
+    },
+    {
+      "authType": 3
+    },
+    {
+      "authType": 1,
+      "isOptional": true
+    }
+  ],
+  "claimRequests": [
+    {
+      "groupId": "0xda1c3726426d5639f4c6352c2c976b87"
+    },
+    {
+      "groupId": "0x85c7ee90829de70d0d51f52336ea4722",
+      "claimType": 0,
+      "value": 4,
+      "isSelectableByUser": true
+    },
+    {
+      "groupId": "0xfae674b6cba3ff2f8ce2114defb200b1",
+      "claimType": 2,
+      "value": 10,
+      "isOptional": true
+    }
+  ]
+}
