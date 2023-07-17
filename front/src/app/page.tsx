@@ -1,126 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from "./components/Header";
-import {
-  useAccount,
-  useConnect,
-  useContractWrite,
-  useDisconnect,
-  useNetwork,
-  usePrepareContractWrite,
-  useSwitchNetwork,
-} from "wagmi";
-import { waitForTransaction, readContract } from "@wagmi/core";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { decodeEventLog, formatEther } from "viem";
-import { abi as AirdropABI } from "../../../abi/Airdrop.json";
-import { formatError, signMessage } from "@/utils/misc";
+import {
+  getProofDataForAuth,
+  getProofDataForClaim,
+  getuserIdFromHex,
+  signMessage,
+} from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
 import {
   SismoConnectButton, // the Sismo Connect React button displayed below
 } from "@sismo-core/sismo-connect-react";
-import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
-import { errorsABI } from "@/utils/errorsABI";
-import {
-  AUTHS,
-  CLAIMS,
-  CONFIG,
-  VerifiedAuth,
-  VerifiedClaim,
-  AuthType,
-  ClaimType,
-} from "@/app/sismo-connect-config";
+import { AUTHS, CLAIMS, CONFIG, AuthType, ClaimType } from "@/app/sismo-connect-config";
+import useContract from "@/utils/useContract";
 
 /* ********************  Defines the chain to use *************************** */
 const CHAIN = mumbaiFork;
 
 export default function Home() {
-  /* ***********************  Application states *************************** */
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [pageState, setPageState] = useState<string>("init");
-  const [amountClaimed, setAmountClaimed] = useState<string>("");
-  const [responseBytes, setResponseBytes] = useState<string>("");
-  const [verifiedClaims, setVerifiedClaims] = useState<VerifiedClaim[]>();
-  const [verifiedAuths, setVerifiedAuths] = useState<VerifiedAuth[]>();
-  const [verifiedSignedMessage, setVerifiedSignedMessage] = useState<string>();
-
-  /* ***************  Wagmi hooks for wallet connection ******************** */
-  const { disconnect } = useDisconnect();
-  const { chain } = useNetwork();
+  const [responseBytes, setResponseBytes] = useState<string | null>(null);
   const { isConnected, address } = useAccount({
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
   });
-  const { switchNetworkAsync, switchNetwork } = useSwitchNetwork();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
   const { openConnectModal, connectModalOpen } = useConnectModal();
 
-  /* *************  Wagmi hooks for contract interaction ******************* */
-  const contractCallInputs =
-    responseBytes && chain
-      ? {
-          address: transactions[0].contractAddress as `0x${string}}`,
-          abi: [...AirdropABI, ...errorsABI],
-          functionName: "claimWithSismo",
-          args: [responseBytes],
-          chain,
-        }
-      : {};
-
-  const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
-  const { writeAsync } = useContractWrite(config);
-
-  /* *************  Handle simulateContract call & chain errors ************ */
-  useEffect(() => {
-    if (chain?.id !== CHAIN.id) return setError(`Please switch to ${CHAIN.name} network`);
-    setError("");
-  }, [chain]);
-
-  useEffect(() => {
-    if (!wagmiSimulateError) return;
-    if (!isConnected) return;
-    return setError(formatError(wagmiSimulateError));
-  }, [wagmiSimulateError, isConnected]);
-
-  /* ************  Handle the airdrop claim button click ******************* */
-  async function claimAirdrop() {
-    if (!address) return;
-    setError("");
-    setLoading(true);
-    try {
-      // Switch to the selected network if not already on it
-      if (chain?.id !== CHAIN.id) await switchNetworkAsync?.(CHAIN.id);
-      setPageState("confirmingTransaction");
-      const tx = await writeAsync?.();
-      setPageState("verifying");
-      const txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
-      if (txReceipt?.status === "success") {
-        setAmountClaimed(
-          formatEther((await readAirdropContract("balanceOf", [address])) as unknown as bigint)
-        );
-        setVerifiedClaims((await readAirdropContract("getVerifiedClaims")) as VerifiedClaim[]);
-        setVerifiedAuths((await readAirdropContract("getVerifiedAuths")) as VerifiedAuth[]);
-        setVerifiedSignedMessage((await readAirdropContract("getVerifiedSignedMessage")) as string);
-        setPageState("verified");
-      }
-    } catch (e: any) {
-      setError(formatError(e));
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    claimAirdrop,
+    reset,
+    amountClaimed,
+    error,
+    pageState,
+    verifiedAuths,
+    verifiedClaims,
+    verifiedSignedMessage,
+  } = useContract({ responseBytes, chain: CHAIN });
 
   /* *************************  Reset state **************************** */
   function resetApp() {
-    disconnect();
-    setAmountClaimed("");
+    reset();
     setResponseBytes("");
-    setError("");
-    setPageState("init");
-    const url = new URL(window.location.href);
-    url.searchParams.delete("sismoConnectResponseCompressed");
-    window.history.replaceState({}, "", url.toString());
   }
 
   return (
@@ -136,7 +60,7 @@ export default function Home() {
           <>
             <>
               {" "}
-              <button onClick={() => resetApp()}>Reset</button>
+              {pageState != "init" && <button onClick={() => resetApp()}>Reset</button>}
               <p>
                 <b>{`Chain: ${chain?.name} [${chain?.id}]`}</b>
                 <br />
@@ -147,31 +71,22 @@ export default function Home() {
               <>
                 <SismoConnectButton
                   config={CONFIG}
-                  // Auths = Data Source Ownership Requests
+                  // Auths = Data Source Ownership Requests. (e.g Wallets, Github, Twitter, Github)
                   auths={AUTHS}
-                  // Claims = prove groump membership of a Data Source in a specific Data Group.
+                  // Claims = prove group membership of a Data Source in a specific Data Group.
+                  // (e.g ENS DAO Voter, Minter of specific NFT, etc.)
                   // Data Groups = [{[dataSource1]: value1}, {[dataSource1]: value1}, .. {[dataSource]: value}]
-                  // When doing so Data Source is not shared to the app.
+                  // Existing Data Groups and how to create one: https://factory.sismo.io/groups-explorer
                   claims={CLAIMS}
-                  // we ask the user to sign a message
-                  // it will be used onchain to prevent frontrunning
+                  // Signature = user can sign a message embedded in their zk proof
                   signature={{ message: signMessage(address!) }}
-                  // onResponseBytes calls a 'setResponse' function with the responseBytes returned by the Sismo Vault
+                  // responseBytes = the response from Sismo Connect, will be sent onchain
                   onResponseBytes={(responseBytes: string) => {
                     setResponseBytes(responseBytes);
-                    setPageState("responseReceived");
                   }}
                   // Some text to display on the button
                   text={"Claim with Sismo"}
                 />
-                <p className="callout">
-                  {" "}
-                  Notes: <br />
-                  1. First ZK Proof generation takes longer time, especially with bad internat as
-                  there is a zkey file to download once in the data vault connection <br />
-                  2. The more proofs you request, the longer it takes to generate them (about 2 secs
-                  per proof)
-                </p>
               </>
             )}
             <div className="status-wrapper">
@@ -188,7 +103,7 @@ export default function Home() {
             </div>
             {isConnected && !amountClaimed && error && (
               <>
-                <p>{error}</p>
+                <p style={{ color: "#ff6347" }}>{error}</p>
                 {error.slice(0, 16) === "Please switch to" && (
                   <button onClick={() => switchNetwork?.(CHAIN.id)}>Switch chain</button>
                 )}
@@ -353,53 +268,3 @@ export default function Home() {
     </>
   );
 }
-
-function readibleHex(userId: string, startLength = 6, endLength = 4, separator = "...") {
-  if (!userId.toString().startsWith("0x")) {
-    return userId; // Return the original string if it doesn't start with "0x"
-  }
-  return userId.substring(0, startLength) + separator + userId.substring(userId.length - endLength);
-}
-
-function getProofDataForAuth(verifiedAuths: VerifiedAuth[], authType: AuthType): string | null {
-  for (const auth of verifiedAuths) {
-    if (auth.proofData && auth.authType === authType) {
-      return readibleHex("0x" + (auth.proofData as unknown as number).toString(16));
-    }
-  }
-
-  return null; // returns null if no matching authType is found
-}
-
-function getProofDataForClaim(
-  verifiedClaims: VerifiedClaim[],
-  claimType: number,
-  groupId: string,
-  value: number
-): string | null {
-  for (const claim of verifiedClaims) {
-    if (claim.proofData && claim.claimType === claimType && claim.groupId === groupId) {
-      return readibleHex("0x" + (claim.proofData as unknown as number).toString(16));
-    }
-  }
-
-  return null; // returns null if no matching authType is found
-}
-
-function getuserIdFromHex(hexUserId: string) {
-  const index = hexUserId.lastIndexOf("000000");
-  if (index !== -1) {
-    return hexUserId.substring(index + 6);
-  } else {
-    return hexUserId; // returns the original string if '00' is not found
-  }
-}
-
-const readAirdropContract = async (functionName: string, args?: string[]) => {
-  return readContract({
-    address: transactions[0].contractAddress as `0x${string}}`,
-    abi: AirdropABI,
-    functionName,
-    args: args || [],
-  });
-};

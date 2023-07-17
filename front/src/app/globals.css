@@ -158,11 +158,12 @@ input:focus {
 
 
 .callout {
-  color: #d3d3d3; /* Light gray color */
+  color: #000000; /* Black color text */
   padding: 1rem; /* Adds some space around the text */
-  border: 1px solid #d3d3d3; /* Adds a light gray border */
+  border: 2px solid #000000; /* Increases border thickness and change to black */
   border-radius: 5px; /* Rounds the corners of the border */
-  background-color: rgba(0,0,0,0.1); /* Adds a very light black background to increase readability of gray text */
+  background-color: rgba(255,255,255,0.6); /* Adds a semi-transparent white background to increase readability of black text */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* Adds a slight shadow for a "lifted" effect */
 }
 
 .verifying, .verified {
