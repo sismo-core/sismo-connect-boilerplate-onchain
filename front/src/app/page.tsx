@@ -7,7 +7,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   getProofDataForAuth,
   getProofDataForClaim,
-  getuserIdFromHex,
+  getUserIdFromHex,
   signMessage,
 } from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
@@ -129,7 +129,7 @@ export default function Home() {
                       <tr key={index}>
                         <td>{AuthType[auth.authType]}</td>
                         <td>
-                          {getuserIdFromHex(
+                          {getUserIdFromHex(
                             "0x" + (auth.userId! as unknown as number).toString(16)
                           )}
                         </td>

@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
-import { Chain, TransactionReceipt, formatEther } from "viem";
+import {
+  Chain,
+  TransactionReceipt,
+  WalletClient,
+  createWalletClient,
+  custom,
+  formatEther,
+  getContract,
+} from "viem";
 import {
   useAccount,
-  useContractWrite,
   useNetwork,
   usePrepareContractWrite,
   useSwitchNetwork,
+  useWalletClient,
 } from "wagmi";
-import { waitForTransaction, readContract } from "@wagmi/core";
+import { waitForTransaction, getPublicClient } from "@wagmi/core";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
 import { formatError } from "./misc";
@@ -44,16 +52,15 @@ export default function useContract({
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
   });
   const { switchNetworkAsync } = useSwitchNetwork();
-  const contractCallInputs = {
+  const publicClient = getPublicClient();
+  const { data: walletClient } = useWalletClient();
+
+  const contract = getContract({
     address: transactions[0].contractAddress as `0x${string}`,
     abi: [...AirdropABI, ...errorsABI],
-    functionName: "claimWithSismo",
-    args: [responseBytes, address],
-    chain,
-    enabled: Boolean(responseBytes),
-  };
-  const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
-  const { writeAsync } = useContractWrite(config);
+    publicClient,
+    walletClient: walletClient as WalletClient,
+  });
 
   useEffect(() => {
     if (!responseBytes) return;
@@ -67,10 +74,18 @@ export default function useContract({
   }, [currentChain]);
 
   useEffect(() => {
-    if (!wagmiSimulateError) return;
-    if (!isConnected) return;
-    return setError(formatError(wagmiSimulateError));
-  }, [wagmiSimulateError, isConnected]);
+    if (!address) return;
+    if (!responseBytes) return;
+    async function simulate() {
+      try {
+        await contract.simulate.claimWithSismo([responseBytes, address]);
+      } catch (e: any) {
+        return setError(formatError(e));
+      }
+    }
+
+    simulate();
+  }, [address, responseBytes]);
 
   /* ************  Handle the airdrop claim button click ******************* */
   async function claimAirdrop() {
@@ -79,7 +94,7 @@ export default function useContract({
     try {
       if (currentChain?.id !== chain.id) await switchNetworkAsync?.(chain.id);
       setPageState("confirmingTransaction");
-      const tx = await writeAsync?.();
+      const hash = await contract.write.claimWithSismo([responseBytes, address]);
       setPageState("verifying");
       let txReceipt: TransactionReceipt | undefined;
       if (chain.id === 5151111) {
@@ -93,34 +108,26 @@ export default function useContract({
             );
           }, 10000)
         );
-        const txReceiptPromise = tx && waitForTransaction({ hash: tx.hash });
+        const txReceiptPromise = hash && waitForTransaction({ hash: hash });
         const race = await Promise.race([txReceiptPromise, timeout]);
         txReceipt = race as TransactionReceipt;
       } else {
-        txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
+        txReceipt = hash && (await waitForTransaction({ hash: hash }));
       }
       if (txReceipt?.status === "success") {
         setAmountClaimed(
-          formatEther((await readAirdropContract("balanceOf", [address])) as unknown as bigint)
+          formatEther((await contract.read.balanceOf([address])) as unknown as bigint)
         );
-        setVerifiedClaims((await readAirdropContract("getVerifiedClaims")) as VerifiedClaim[]);
-        setVerifiedAuths((await readAirdropContract("getVerifiedAuths")) as VerifiedAuth[]);
-        setVerifiedSignedMessage((await readAirdropContract("getVerifiedSignedMessage")) as string);
+        setVerifiedClaims((await contract.read.getVerifiedClaims()) as VerifiedClaim[]);
+        setVerifiedAuths((await contract.read.getVerifiedAuths()) as VerifiedAuth[]);
+        setVerifiedSignedMessage((await contract.read.getVerifiedSignedMessage()) as string);
         setPageState("verified");
       }
     } catch (e: any) {
+      console.error(e);
       setError(formatError(e));
     }
   }
-
-  const readAirdropContract = async (functionName: string, args?: string[]) => {
-    return readContract({
-      address: transactions[0].contractAddress as `0x${string}}`,
-      abi: AirdropABI,
-      functionName,
-      args: args || [],
-    });
-  };
 
   function reset() {
     setAmountClaimed("");

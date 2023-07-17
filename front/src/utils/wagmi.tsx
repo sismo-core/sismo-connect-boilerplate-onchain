@@ -1,6 +1,6 @@
 "use client";
 
-import '@rainbow-me/rainbowkit/styles.css';
+import "@rainbow-me/rainbowkit/styles.css";
 
 import { useEffect, useState } from "react";
 import {
@@ -72,7 +72,9 @@ export function WagmiProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={chains} modalSize="compact">{mounted && children}</RainbowKitProvider>
+      <RainbowKitProvider chains={chains} modalSize="compact">
+        {mounted && children}
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 }

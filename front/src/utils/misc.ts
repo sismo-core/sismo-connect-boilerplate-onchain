@@ -66,7 +66,7 @@ export function getProofDataForClaim(
   return null; // returns null if no matching authType is found
 }
 
-export function getuserIdFromHex(hexUserId: string) {
+export function getUserIdFromHex(hexUserId: string) {
   const index = hexUserId.lastIndexOf("000000");
   if (index !== -1) {
     return hexUserId.substring(index + 6);
