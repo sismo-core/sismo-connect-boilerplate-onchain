@@ -16,7 +16,7 @@ const Header: React.FC = () => {
         the frontend <br />
         3. The frontend forwards the response to ERC20 smart contract via claimWithSismo function{" "}
         <br />
-        4. The smart contract the proofs contained in the response, mints ERC20 tokens and stores
+        4. The smart contract verifies the proofs contained in the response, mints ERC20 tokens and stores
         verified claims and auths <br />
         5. The frontend reads the verified claims and auths from the contract and displays them
       </p>

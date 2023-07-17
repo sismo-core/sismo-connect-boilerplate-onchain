@@ -43,7 +43,7 @@ contract Airdrop is ERC20, SismoConnect {
     _setClaims(claimRequests);
   }
 
-  function claimWithSismo(bytes memory response) public {
+  function claimWithSismo(bytes memory response, address to) public {
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
       // checking response against requested auths
@@ -51,25 +51,16 @@ contract Airdrop is ERC20, SismoConnect {
       // checking response against requested claims
       claims: _claimRequests,
       // checking response against requested message signature
-      signature: buildSignature({message: abi.encode(msg.sender)})
+      signature: buildSignature({message: abi.encode(to)})
     });
-
-    // it is the anonymous identifier of a user's vault for a specific app
-    // --> vaultId = hash(userVaultSecret, appId)
-    // used to avoid double claims
-    uint256 vaultId = result.getUserId(AuthType.VAULT);
-
-    // checking if the user has already claimed
-    if (claimed[vaultId]) {
-      revert AlreadyClaimed();
-    }
-
-    // marking that the user has claimed
-    claimed[vaultId] = true;
 
     // airdrop amount = number of verified proofs
     uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
-    _mint(msg.sender, airdropAmount);
+    _mint(to, airdropAmount);
+
+    // cleaning previous results of the verification
+    _cleanVerifiedAuths();
+    _cleanVerifiedClaims();
 
     // storing the result of the verification
     for (uint256 i = 0; i < result.auths.length; i++) {
@@ -80,10 +71,9 @@ contract Airdrop is ERC20, SismoConnect {
       _verifiedClaims.push(result.claims[i]);
       emit ClaimVerified(result.claims[i]);
     }
-    _verifiedSignedMessage =result.signedMessage;
+    _verifiedSignedMessage = result.signedMessage;
     emit SignedMessageVerified(result.signedMessage);
   }
-
 
   function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
     return _verifiedClaims;
@@ -109,4 +99,21 @@ contract Airdrop is ERC20, SismoConnect {
     }
   }
 
+  function _cleanVerifiedAuths() private {
+    uint256 verifiedAuthsLength = _verifiedAuths.length;
+    if (verifiedAuthsLength != 0) {
+      for (uint256 i = 0; i < verifiedAuthsLength; i++) {
+        _verifiedAuths.pop();
+      }
+    }
+  }
+
+  function _cleanVerifiedClaims() private {
+    uint256 verifiedClaimsLength = _verifiedClaims.length;
+    if (verifiedClaimsLength != 0) {
+      for (uint256 i = 0; i < verifiedClaimsLength; i++) {
+        _verifiedClaims.pop();
+      }
+    }
+  }
 }

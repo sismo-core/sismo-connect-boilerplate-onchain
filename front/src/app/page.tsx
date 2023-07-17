@@ -114,7 +114,7 @@ export default function Home() {
             {verifiedAuths && (
               <>
                 <p>
-                  {amountClaimed} tokens were claimd in total on {address}.
+                  {amountClaimed} tokens were claimed in total on {address}.
                 </p>
                 <h3>Verified Auths</h3>
                 <table>

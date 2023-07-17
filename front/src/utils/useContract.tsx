@@ -48,7 +48,7 @@ export default function useContract({
     address: transactions[0].contractAddress as `0x${string}`,
     abi: [...AirdropABI, ...errorsABI],
     functionName: "claimWithSismo",
-    args: [responseBytes],
+    args: [responseBytes, address],
     chain,
     enabled: Boolean(responseBytes),
   };

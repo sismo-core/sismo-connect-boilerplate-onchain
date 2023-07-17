@@ -38,10 +38,13 @@ export function readibleHex(userId: string, startLength = 6, endLength = 4, sepa
   return userId.substring(0, startLength) + separator + userId.substring(userId.length - endLength);
 }
 
-export function getProofDataForAuth(verifiedAuths: VerifiedAuth[], authType: AuthType): string | null {
+export function getProofDataForAuth(
+  verifiedAuths: VerifiedAuth[],
+  authType: AuthType
+): string | null {
   for (const auth of verifiedAuths) {
     if (auth.proofData && auth.authType === authType) {
-      return readibleHex("0x" + (auth.proofData as unknown as number).toString(16));
+      return readibleHex((auth.proofData as unknown as number).toString(16));
     }
   }
 
@@ -56,7 +59,7 @@ export function getProofDataForClaim(
 ): string | null {
   for (const claim of verifiedClaims) {
     if (claim.proofData && claim.claimType === claimType && claim.groupId === groupId) {
-      return readibleHex("0x" + (claim.proofData as unknown as number).toString(16));
+      return readibleHex((claim.proofData as unknown as number).toString(16));
     }
   }
 
