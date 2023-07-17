@@ -57,6 +57,7 @@ export default function useContract({
     async function simulate() {
       try {
         await airdropContract.simulate.claimWithSismo([responseBytes, address]);
+        await airdropContract.simulate.balanceOf([address]);
       } catch (e: any) {
         return setError(formatError(e));
       }
@@ -72,10 +73,8 @@ export default function useContract({
     if (chain.id === 5151111) {
       const timeout = new Promise((_, reject) =>
         setTimeout(() => {
-          reject(
-            new Error(
-              "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
-            )
+          setError(
+            "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
           );
         }, 10000)
       );

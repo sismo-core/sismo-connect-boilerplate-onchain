@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
-import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import {
   formatError,
@@ -45,7 +45,6 @@ export default function Home() {
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
   });
   const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
   const { openConnectModal, connectModalOpen } = useConnectModal();
 
   const { airdropContract, switchNetworkAsync, waitingForTransaction, error } = useContract({
@@ -58,7 +57,8 @@ export default function Home() {
     setAppState((prev) => {
       return { ...prev, pageState: "responseReceived" };
     });
-  }, [responseBytes]);
+    setClaimError(error);
+  }, [responseBytes, error, claimError]);
 
   /* *************************  Reset state **************************** */
   function resetApp() {
@@ -111,6 +111,10 @@ export default function Home() {
       }
     } catch (e: any) {
       setClaimError(formatError(e));
+    } finally {
+      setAppState((prev) => {
+        return { ...prev, pageState: "responseReceived" };
+      });
     }
   }
 
@@ -156,25 +160,34 @@ export default function Home() {
                 />
               </>
             )}
-            <div className="status-wrapper">
-              {appState.pageState == "responseReceived" && (
-                <button onClick={() => claimAirdrop()}>{"Claim"}</button>
-              )}
-              {appState.pageState == "confirmingTransaction" && (
-                <button disabled={true}>{"Confirm tx in wallet"}</button>
-              )}
-              {appState.pageState == "verifying" && (
-                <span className="verifying"> Verifying ZK Proofs onchain... </span>
-              )}
-              {appState.pageState == "verified" && (
-                <span className="verified"> ZK Proofs Verified! </span>
-              )}
-            </div>
-            {isConnected && !appState.amountClaimed && (error || claimError) && (
+            {claimError !== null && (
+              <div className="status-wrapper">
+                {appState.pageState == "responseReceived" && (
+                  <button onClick={() => claimAirdrop()}>{"Claim"}</button>
+                )}
+                {appState.pageState == "confirmingTransaction" && (
+                  <button disabled={true}>{"Confirm tx in wallet"}</button>
+                )}
+                {appState.pageState == "verifying" && (
+                  <span className="verifying"> Verifying ZK Proofs onchain... </span>
+                )}
+                {appState.pageState == "verified" && (
+                  <span className="verified"> ZK Proofs Verified! </span>
+                )}
+              </div>
+            )}
+            {isConnected && !appState.amountClaimed && claimError && (
               <>
-                <p style={{ color: "#ff6347" }}>{error}</p>
-                {error.slice(0, 16) === "Please switch to" && (
-                  <button onClick={() => switchNetwork?.(CHAIN.id)}>Switch chain</button>
+                <p style={{ color: "#ff6347" }}>{claimError}</p>
+                {claimError.slice(0, 50) ===
+                  'The contract function "balanceOf" returned no data' && (
+                  <p style={{ color: "#0BDA51" }}>
+                    Please restart your frontend with "yarn dev" command and try again, it will
+                    automatically deploy a new contract for you!
+                  </p>
+                )}
+                {claimError.slice(0, 16) === "Please switch to" && (
+                  <button onClick={() => switchNetworkAsync?.(CHAIN.id)}>Switch chain</button>
                 )}
               </>
             )}
