@@ -24,19 +24,22 @@ const Header: React.FC = () => {
       </p>
       <div>
         <p>
-          <b className="code-snippet">src/front/app/page.tsx</b>: Frontend - Queries contract to know Sismo Connect Configuration and Request, requests ZK Proofs from users via Sismo Connect Button
+          <b className="code-snippet">front/src/app/page.tsx</b>: Frontend - Integrate Sismo Connect Button and make Sismo Connect request
         </p>
         <p>
-          <b className="code-snippet">src/Airdrop.sol</b>: Contract - Sets up the Sismo Connect Configuration and Request, verifies Sismo Connect response,
-          mints tokens and stores verified claims, auths and signed message
+          <b className="code-snippet">front/src/app/sismo-connect-config.ts</b>: Sismo Connect configuration and requests
+        </p>
+        <p>
+          <b className="code-snippet">src/Airdrop.sol</b>: Contract - verifies Sismo Connect response and stores verified claims, auths and signed message
         </p>
         <p className="callout">
           {" "}
           Notes: <br />
-          1. If you are using metamask and transactions hang. Go to settings > advanced > clear activity and nonce data <br />
-          2. First ZK Proof generation takes longer time, especially with bad internet as there is a
+          1. You should exactly the same Configuration (AppId and impersonation), AuthRequests and ClaimsRequests in the frontend and in your contract <br />
+          2. If you are using metamask and transactions hang. Go to settings > advanced > clear activity and nonce data <br />
+          3. First ZK Proof generation takes longer time, especially with bad internet as there is a
           zkey file to download once in the data vault connection <br />
-          3. The more proofs you request, the longer it takes to generate them (about 2 secs per
+          4. The more proofs you request, the longer it takes to generate them (about 2 secs per
           proof)
         </p>
       </div>
