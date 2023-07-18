@@ -14,6 +14,7 @@ import {
   signMessage,
   fundMyAccountOnLocalFork,
   useContract,
+  getResults,
   // chains
   mumbaiFork,
   mainnet,
@@ -76,23 +77,15 @@ export default function Home() {
     appId: "",
   });
   const [sismoConnectRequest, setSismoConnectRequest] = useState<{
-    auths: AuthRequest[] | undefined;
-    claims: ClaimRequest[] | undefined;
-  }>({
-    auths: undefined,
-    claims: undefined,
-  });
+    auths: AuthRequest[];
+    claims: ClaimRequest[];
+  } | null>(null);
   const [sismoConnectVerifiedResult, setSismoConnectVerifiedResult] = useState<{
-    verifiedClaims: VerifiedClaim[] | undefined;
-    verifiedAuths: VerifiedAuth[] | undefined;
-    verifiedSignedMessage: string | undefined;
+    verifiedClaims: VerifiedClaim[];
+    verifiedAuths: VerifiedAuth[];
+    verifiedSignedMessage: string;
     amountClaimed: string;
-  }>({
-    verifiedClaims: undefined,
-    verifiedAuths: undefined,
-    verifiedSignedMessage: undefined,
-    amountClaimed: "",
-  });
+  } | null>(null);
   const [responseBytes, setResponseBytes] = useState<string | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
   const { isConnected, address } = useAccount({
@@ -141,19 +134,9 @@ export default function Home() {
   /* *************************  Reset state **************************** */
   function resetApp() {
     setPageState("init");
-    setSismoConnectConfig({
-      appId: "",
-    });
-    setSismoConnectRequest({
-      auths: undefined,
-      claims: undefined,
-    });
-    setSismoConnectVerifiedResult({
-      verifiedClaims: undefined,
-      verifiedAuths: undefined,
-      verifiedSignedMessage: undefined,
-      amountClaimed: "",
-    });
+    setSismoConnectConfig({ appId: "" });
+    setSismoConnectRequest(null);
+    setSismoConnectVerifiedResult(null);
     setClaimError("");
     const url = new URL(window.location.href);
     url.searchParams.delete("sismoConnectResponseCompressed");
@@ -172,20 +155,20 @@ export default function Home() {
       setPageState("verifying");
       let txReceipt = await waitingForTransaction(hash);
       if (txReceipt?.status === "success") {
-        const amountClaimed = formatEther(
-          (await airdropContract.read.balanceOf([address])) as bigint
+        const sismoConnectVerifiedResult = getResults(
+          (await airdropContract.read.getSismoConnectVerifiedResult()) as [
+            VerifiedAuth[],
+            VerifiedClaim[],
+            string
+          ]
         );
-        const verifiedClaims = (await airdropContract.read.getVerifiedClaims()) as VerifiedClaim[];
-        const verifiedAuths = (await airdropContract.read.getVerifiedAuths()) as VerifiedAuth[];
-        const verifiedSignedMessage =
-          (await airdropContract.read.getVerifiedSignedMessage()) as string;
-        setPageState("verified");
         setSismoConnectVerifiedResult({
-          verifiedClaims,
-          verifiedAuths,
-          verifiedSignedMessage,
-          amountClaimed,
+          verifiedClaims: sismoConnectVerifiedResult.verifiedClaims,
+          verifiedAuths: sismoConnectVerifiedResult.verifiedAuths,
+          verifiedSignedMessage: sismoConnectVerifiedResult.verifiedSignedMessage,
+          amountClaimed: formatEther((await airdropContract.read.balanceOf([address])) as bigint),
         });
+        setPageState("verified");
       }
     } catch (e: any) {
       setClaimError(formatError(e));
@@ -214,7 +197,7 @@ export default function Home() {
                 <b>Your airdrop destination address is: {address}</b>
               </p>
             </>
-            {pageState == "init" && (
+            {pageState == "init" && sismoConnectRequest && (
               <>
                 <SismoConnectButton
                   // the setup of the Sismo Connect Config and Sismo Connect Request
@@ -249,7 +232,7 @@ export default function Home() {
                 {pageState == "verified" && <span className="verified"> ZK Proofs Verified! </span>}
               </div>
             )}
-            {isConnected && !sismoConnectVerifiedResult.amountClaimed && claimError && (
+            {isConnected && !sismoConnectVerifiedResult?.amountClaimed && claimError && (
               <>
                 <p style={{ color: "#ff6347" }}>{claimError}</p>
                 {claimError.slice(0, 50) ===
@@ -266,7 +249,7 @@ export default function Home() {
             )}
             {/* Table of the Sismo Connect requests and verified result */}
             {/* Table for Verified Auths */}
-            {sismoConnectVerifiedResult.verifiedAuths && (
+            {sismoConnectVerifiedResult?.verifiedAuths && (
               <>
                 <p>
                   {sismoConnectVerifiedResult.amountClaimed} tokens were claimed in total on{" "}
@@ -297,7 +280,7 @@ export default function Home() {
             )}
             <br />
             {/* Table for Verified Claims */}
-            {sismoConnectVerifiedResult.verifiedClaims && (
+            {sismoConnectVerifiedResult?.verifiedClaims && (
               <>
                 <h3>Verified Claims</h3>
                 <table>
@@ -346,10 +329,10 @@ export default function Home() {
                     <td>{AuthType[auth.authType]}</td>
                     <td>{auth.userId || "No userId requested"}</td>
                     <td>{auth.isOptional ? "optional" : "required"}</td>
-                    {sismoConnectVerifiedResult.verifiedAuths ? (
+                    {sismoConnectVerifiedResult?.verifiedAuths ? (
                       <td>
                         {getProofDataForAuth(
-                          sismoConnectVerifiedResult.verifiedAuths,
+                          sismoConnectVerifiedResult?.verifiedAuths,
                           auth.authType
                         )!.toString()}
                       </td>
@@ -389,7 +372,7 @@ export default function Home() {
                     <td>{claim.value ? claim.value : "1"}</td>
                     <td>{claim.isSelectableByUser ? "yes" : "no"}</td>
                     <td>{claim.isOptional ? "optional" : "required"}</td>
-                    {sismoConnectVerifiedResult.verifiedClaims ? (
+                    {sismoConnectVerifiedResult?.verifiedClaims ? (
                       <td>
                         {
                           getProofDataForClaim(
@@ -420,7 +403,7 @@ export default function Home() {
                 <tr>
                   <td>{{ message: signMessage(address!) }.message}</td>
                   <td>
-                    {sismoConnectVerifiedResult.verifiedSignedMessage
+                    {sismoConnectVerifiedResult?.verifiedSignedMessage
                       ? sismoConnectVerifiedResult.verifiedSignedMessage
                       : "ZK Proof not verified"}
                   </td>

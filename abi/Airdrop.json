@@ -464,7 +464,7 @@
   },
   {
     "inputs": [],
-    "name": "getVerifiedAuths",
+    "name": "getSismoConnectVerifiedResult",
     "outputs": [
       {
         "components": [
@@ -497,15 +497,7 @@
         "internalType": "struct VerifiedAuth[]",
         "name": "",
         "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVerifiedClaims",
-    "outputs": [
+      },
       {
         "components": [
           {
@@ -547,15 +539,7 @@
         "internalType": "struct VerifiedClaim[]",
         "name": "",
         "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVerifiedSignedMessage",
-    "outputs": [
+      },
       {
         "internalType": "bytes",
         "name": "",

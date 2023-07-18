@@ -108,3 +108,15 @@ export function getAuthRequestsAndClaimRequestsFromSismoConnectRequest(
 
   return { authRequests, claimRequests };
 }
+
+export function getResults(sismoConnectVerifiedResult: [VerifiedAuth[], VerifiedClaim[], string]): {
+  verifiedAuths: VerifiedAuth[];
+  verifiedClaims: VerifiedClaim[];
+  verifiedSignedMessage: string;
+} {
+  return {
+    verifiedAuths: sismoConnectVerifiedResult[0] as VerifiedAuth[],
+    verifiedClaims: sismoConnectVerifiedResult[1] as VerifiedClaim[],
+    verifiedSignedMessage: sismoConnectVerifiedResult[2] as string,
+  };
+}
