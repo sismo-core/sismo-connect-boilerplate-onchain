@@ -15,13 +15,24 @@ contract SismoConnectConfigReader is Script {
 
   function readSismoConnectRequest(
     string memory json
-  ) public returns (bytes16, AuthRequest[] memory, ClaimRequest[] memory, bool) {
+  )
+    public
+    returns (
+      bytes16,
+      // AuthRequest[] memory, ClaimRequest[] memory,
+      bool
+    )
+  {
     bytes16 appId = bytes16(json.readBytes(string.concat(".appId")));
-    AuthRequest[] memory authRequests = readAuthRequests(json);
-    ClaimRequest[] memory claimRequests = readClaimRequests(json);
+    // AuthRequest[] memory authRequests = readAuthRequests(json);
+    // ClaimRequest[] memory claimRequests = readClaimRequests(json);
     bool isImpersonationMode = _tryReadBool(json, ".isImpersonationMode");
 
-    return (appId, authRequests, claimRequests, isImpersonationMode);
+    return (
+      appId,
+      //authRequests, claimRequests,
+      isImpersonationMode
+    );
   }
 
   function readAuthRequests(string memory json) public virtual returns (AuthRequest[] memory) {

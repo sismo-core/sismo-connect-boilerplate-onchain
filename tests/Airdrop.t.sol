@@ -16,8 +16,8 @@ contract Airdroptest is BaseTest, SismoConnectConfigReader {
     );
     (
       bytes16 appId,
-      AuthRequest[] memory authRequests,
-      ClaimRequest[] memory claimRequests,
+      // AuthRequest[] memory authRequests,
+      // ClaimRequest[] memory claimRequests,
       bool isImpersonationMode
     ) = readSismoConnectRequest(json);
 
@@ -25,9 +25,9 @@ contract Airdroptest is BaseTest, SismoConnectConfigReader {
       "my Airdrop",
       "AIR",
       appId,
-      isImpersonationMode,
-      authRequests,
-      claimRequests
+      isImpersonationMode
+      // authRequests,
+      // claimRequests
     );
   }
 

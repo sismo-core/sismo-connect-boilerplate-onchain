@@ -13,14 +13,19 @@ import {
 } from "@/utils/misc";
 import { mumbaiFork } from "@/utils/wagmi";
 import {
+  AuthRequest,
+  ClaimRequest,
+  RequestBuilder,
   SismoConnectButton,
+  VaultConfig,
   VerifiedAuth,
   VerifiedClaim, // the Sismo Connect React button displayed below
 } from "@sismo-core/sismo-connect-react";
 import { fundMyAccountOnLocalFork } from "@/utils/fundMyAccountOnLocalFork";
-import { AUTHS, CLAIMS, CONFIG, AuthType, ClaimType } from "@/app/sismo-connect-config";
+import { CONFIG, AuthType, ClaimType } from "@/app/sismo-connect-config";
 import useContract from "@/utils/useContract";
-import { formatEther } from "viem";
+import { decodeAbiParameters, formatEther } from "viem";
+import { get } from "http";
 
 /* ********************  Defines the chain to use *************************** */
 const CHAIN = mumbaiFork;
@@ -29,12 +34,21 @@ export default function Home() {
   const [appState, setAppState] = useState<{
     pageState: string;
     amountClaimed: string;
+    sismoConnectConfig: { appId: string | undefined; vault: VaultConfig | {} };
+    claimRequests: ClaimRequest[] | undefined;
+    authRequests: AuthRequest[] | undefined;
     verifiedClaims: VerifiedClaim[] | undefined;
     verifiedAuths: VerifiedAuth[] | undefined;
     verifiedSignedMessage: string | undefined;
   }>({
     pageState: "init",
     amountClaimed: "",
+    sismoConnectConfig: {
+      appId: undefined,
+      vault: {},
+    },
+    claimRequests: undefined,
+    authRequests: undefined,
     verifiedClaims: undefined,
     verifiedAuths: undefined,
     verifiedSignedMessage: undefined,
@@ -53,6 +67,52 @@ export default function Home() {
   });
 
   useEffect(() => {
+    if (!isConnected) return;
+    async function getRequests() {
+      const appId = (await airdropContract.read.APP_ID()) as string;
+      const isImpersonationMode = (await airdropContract.read.IS_IMPERSONATION_MODE()) as boolean;
+      const authRequests = ((await airdropContract.read.getAuthRequests()) as AuthRequest[]).map(
+        (authRequest: AuthRequest) => {
+          return {
+            ...authRequest,
+            userId: authRequest.userId?.toString() ?? "0",
+          };
+        }
+      ) as AuthRequest[];
+      const claimRequests = ((await airdropContract.read.getClaimRequests()) as ClaimRequest[]).map(
+        (claimRequest: ClaimRequest) => {
+          return {
+            ...claimRequest,
+            groupTimestamp:
+              (claimRequest.groupTimestamp as string) === "0x6c617465737400000000000000000000"
+                ? "latest"
+                : (decodeAbiParameters(
+                    ["bytes16"],
+                    claimRequest.groupTimestamp as `0x${string}`
+                  )[0] as number),
+            value: parseInt(claimRequest.value?.toString() ?? "1"),
+          };
+        }
+      ) as ClaimRequest[];
+
+      setAppState((prev) => {
+        return {
+          ...prev,
+          // we impersonate accounts if the impersonation mode is set to true in the contract
+          sismoConnectConfig: {
+            appId,
+            vault: (isImpersonationMode === true ? CONFIG.vault : {}) as VaultConfig,
+          },
+          authRequests,
+          claimRequests,
+        };
+      });
+    }
+
+    getRequests();
+  }, [appState.pageState]);
+
+  useEffect(() => {
     if (!responseBytes) return;
     setAppState((prev) => {
       return { ...prev, pageState: "responseReceived" };
@@ -65,6 +125,12 @@ export default function Home() {
     setAppState({
       pageState: "init",
       amountClaimed: "",
+      sismoConnectConfig: {
+        appId: undefined,
+        vault: {},
+      },
+      claimRequests: undefined,
+      authRequests: undefined,
       verifiedClaims: undefined,
       verifiedAuths: undefined,
       verifiedSignedMessage: undefined,
@@ -141,14 +207,16 @@ export default function Home() {
             {appState.pageState == "init" && (
               <>
                 <SismoConnectButton
-                  config={CONFIG}
+                  config={{
+                    ...(appState.sismoConnectConfig as { appId: string; vault: VaultConfig }),
+                  }}
                   // Auths = Data Source Ownership Requests. (e.g Wallets, Github, Twitter, Github)
-                  auths={AUTHS}
+                  auths={appState.authRequests}
                   // Claims = prove group membership of a Data Source in a specific Data Group.
                   // (e.g ENS DAO Voter, Minter of specific NFT, etc.)
                   // Data Groups = [{[dataSource1]: value1}, {[dataSource1]: value1}, .. {[dataSource]: value}]
                   // Existing Data Groups and how to create one: https://factory.sismo.io/groups-explorer
-                  claims={CLAIMS}
+                  claims={appState.claimRequests}
                   // Signature = user can sign a message embedded in their zk proof
                   signature={{ message: signMessage(address!) }}
                   // responseBytes = the response from Sismo Connect, will be sent onchain
@@ -267,7 +335,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {AUTHS.map((auth, index) => (
+                {appState?.authRequests?.map((auth, index) => (
                   <tr key={index}>
                     <td>{AuthType[auth.authType]}</td>
                     <td>{auth.userId || "No userId requested"}</td>
@@ -298,7 +366,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {CLAIMS.map((claim, index) => (
+                {appState?.claimRequests?.map((claim, index) => (
                   <tr key={index}>
                     <td>
                       <a

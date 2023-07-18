@@ -12,13 +12,19 @@ contract DeployAirdrop is Script, SismoConnectConfigReader {
     string memory json = vm.readFile(string.concat(vm.projectRoot(), "/sismo-connect-config.json"));
     (
       bytes16 appId,
-      AuthRequest[] memory authRequests,
-      ClaimRequest[] memory claimRequests,
+      // AuthRequest[] memory authRequests,
+      // ClaimRequest[] memory claimRequests,
       bool isImpersonationMode
     ) = readSismoConnectRequest(json);
 
     vm.startBroadcast();
-    new Airdrop("my Airdrop", "AIR", appId, isImpersonationMode, authRequests, claimRequests);
+    new Airdrop(
+      "my Airdrop",
+      "AIR",
+      appId,
+      isImpersonationMode
+      // authRequests, claimRequests
+    );
     vm.stopBroadcast();
   }
 }
