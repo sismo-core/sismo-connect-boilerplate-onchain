@@ -2,33 +2,15 @@
 pragma solidity ^0.8.20;
 
 import "tests/base/BaseTest.t.sol";
-import "sismo-connect-solidity/SismoLib.sol";
-import {SismoConnectConfigReader} from "script/utils/SismoConnectConfigReader.sol";
+import "sismo-connect-solidity/SismoConnectLib.sol";
 import {Airdrop} from "src/Airdrop.sol";
 
-contract Airdroptest is BaseTest, SismoConnectConfigReader {
+contract Airdroptest is BaseTest {
   Airdrop airdrop;
   address claimAddress = 0x061060a65146b3265C62fC8f3AE977c9B27260fF;
 
   function setUp() public {
-    string memory json = vm.readFile(
-      string.concat(vm.projectRoot(), "/tests/sismo-connect-config.test.json")
-    );
-    (
-      bytes16 appId,
-      // AuthRequest[] memory authRequests,
-      // ClaimRequest[] memory claimRequests,
-      bool isImpersonationMode
-    ) = readSismoConnectRequest(json);
-
-    airdrop = new Airdrop(
-      "my Airdrop",
-      "AIR",
-      appId,
-      isImpersonationMode
-      // authRequests,
-      // claimRequests
-    );
+    airdrop = new Airdrop("my Airdrop", "AIR");
   }
 
   function testAirdrop() public {

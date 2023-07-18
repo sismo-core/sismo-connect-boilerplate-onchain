@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import {IAddressesProvider} from "sismo-connect-solidity/SismoLib.sol";
+import {IAddressesProvider} from "sismo-connect-solidity/SismoConnectLib.sol";
 
 interface IAvailableRootsRegistry {
   event RegisteredRoot(uint256 root);

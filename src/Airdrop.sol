@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "forge-std/console.sol";
-import "sismo-connect-solidity/SismoLib.sol";
+import "sismo-connect-solidity/SismoConnectLib.sol";
 
 /*
  * @title Airdrop
@@ -18,6 +18,12 @@ contract Airdrop is ERC20, SismoConnect {
   event SignedMessageVerified(bytes verifiedSignedMessage);
   using SismoConnectHelper for SismoConnectVerifiedResult;
 
+  // appId of the Sismo Connect app
+  bytes16 private _appId = 0x32403ced4b65f2079eda77c84e7d2be6;
+  // allow proofs made from impersonating accounts to be verified
+  // it should be set to false for production
+  bool private _isImpersonationMode = true;
+
   // these requests should be queried by the app frontend
   // Sismo Connect response's zk proofs will be checked against these requests.
   // check _setRequests function to see how these requests are built
@@ -31,10 +37,8 @@ contract Airdrop is ERC20, SismoConnect {
 
   constructor(
     string memory name,
-    string memory symbol,
-    bytes16 appId,
-    bool isImpersonationMode
-  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {
+    string memory symbol
+  ) ERC20(name, symbol) SismoConnect(buildConfig(_appId, _isImpersonationMode)) {
     // defining requests
     // Request users to prove ownership of a Data Source (Wallet, Twitter, Github, Telegram, etc.)
     AuthRequest[] memory authRequests = new AuthRequest[](3);

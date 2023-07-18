@@ -1,3 +1,3 @@
 forge-std/=lib/forge-std/src/
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
-sismo-connect-solidity/=lib/sismo-connect-packages/packages/sismo-connect-solidity/src/
+sismo-connect-solidity/=lib/sismo-connect-solidity/src/
