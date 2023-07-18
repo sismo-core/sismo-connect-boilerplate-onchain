@@ -102,6 +102,10 @@ export default function Home() {
   // Set react state accordingly to display the Sismo Connect Button
   useEffect(() => {
     if (!isConnected) return;
+    if (chain?.id !== CHAIN.id) {
+      setSismoConnectRequest(null);
+      return;
+    }
     async function getRequests() {
       const appId = (await airdropContract.read.APP_ID()) as string;
       const isImpersonationMode = (await airdropContract.read.IS_IMPERSONATION_MODE()) as boolean;
@@ -123,12 +127,12 @@ export default function Home() {
       });
     }
     getRequests();
-  }, [pageState]);
+  }, [pageState, chain]);
 
   useEffect(() => {
+    setClaimError(error);
     if (!responseBytes) return;
     setPageState("responseReceived");
-    setClaimError(error);
   }, [responseBytes, error, claimError]);
 
   /* *************************  Reset state **************************** */
