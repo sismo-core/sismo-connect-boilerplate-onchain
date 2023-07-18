@@ -2,15 +2,15 @@
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "forge-std/console.sol";
-import "sismo-connect-solidity/SismoConnectLib.sol";
+import "forge-std/console2.sol";
+import "sismo-connect-solidity/SismoLib.sol";
 
 /*
  * @title Airdrop
  * @author Sismo
  * @dev Simple Airdrop contract gated by Sismo Connect
  * Application requests multiple zk proofs (auths and claims) and verify them
- * The contract stores all verified results in storage
+ * The contract stores all requests and verified results in storage
  */
 contract Airdrop is ERC20, SismoConnect {
   event AuthVerified(VerifiedAuth verifiedAuth);
@@ -45,31 +45,14 @@ contract Airdrop is ERC20, SismoConnect {
     // Anonymous identifier of the vault for this app
     // vaultId = hash(vaultSecret, appId).
     // full docs: https://docs.sismo.io/sismo-docs/build-with-sismo-connect/technical-documentation/vault-and-proof-identifiers
-    authRequests[0] = AuthRequest({
-      authType: AuthType.VAULT,
-      userId: 0,
-      isAnon: false,
-      isOptional: false,
-      isSelectableByUser: true,
-      extraData: ""
-    });
+    authRequests[0] = buildAuth({authType: AuthType.VAULT});
     // Request users to prove ownership of an EVM account
-    authRequests[1] = AuthRequest({
-      authType: AuthType.EVM_ACCOUNT,
-      userId: 0,
-      isAnon: false,
-      isOptional: false,
-      isSelectableByUser: true,
-      extraData: ""
-    });
+    authRequests[1] = buildAuth({authType: AuthType.EVM_ACCOUNT});
     // Request users to prove ownership of a Github account
-    authRequests[2] = AuthRequest({
+    authRequests[2] = buildAuth({
       authType: AuthType.GITHUB,
-      userId: 0,
-      isAnon: false,
       isOptional: true,
-      isSelectableByUser: true,
-      extraData: ""
+      isSelectableByUser: true
     });
 
     // Request users to prove membership in a Data Group (e.g I own a wallet that is part of a DAO, owns an NFT, etc.)
@@ -78,43 +61,26 @@ contract Airdrop is ERC20, SismoConnect {
     // Data Group members          = contributors to sismo-core/sismo-hub
     // value for each group member = number of contributions
     // request user to prove membership in the group
-    claimRequests[0] = ClaimRequest({
-      groupId: bytes16(0xda1c3726426d5639f4c6352c2c976b87),
-      groupTimestamp: bytes16("latest"),
-      isOptional: false,
-      value: 1,
-      isSelectableByUser: true,
-      claimType: ClaimType.GTE,
-      extraData: ""
-    });
+    claimRequests[0] = buildClaim({groupId: bytes16(0xda1c3726426d5639f4c6352c2c976b87)});
     // claim ENS DAO Voters Data Group membership: https://factory.sismo.io/groups-explorer?search=0x85c7ee90829de70d0d51f52336ea4722
     // Data Group members          = voters in ENS DAO
     // value for each group member = number of votes in ENS DAO
     // request user to prove membership in the group with value >= 17
-    claimRequests[1] = ClaimRequest({
-      groupId: bytes16(0x85c7ee90829de70d0d51f52336ea4722),
-      groupTimestamp: bytes16("latest"),
-      isOptional: false,
-      value: 4,
-      isSelectableByUser: true,
-      claimType: ClaimType.GTE,
-      extraData: ""
-    });
+    claimRequests[1] = buildClaim({groupId: bytes16(0x85c7ee90829de70d0d51f52336ea4722), value: 4});
     // claim on Stand with Crypto NFT Minters Data Group membership: https://factory.sismo.io/groups-explorer?search=0xfae674b6cba3ff2f8ce2114defb200b1
     // Data Group members          = minters of the Stand with Crypto NFT
     // value for each group member = number of NFT minted
     // request user to prove membership in the group with value = 10
-    claimRequests[2] = ClaimRequest({
+    claimRequests[2] = buildClaim({
       groupId: bytes16(0xfae674b6cba3ff2f8ce2114defb200b1),
-      groupTimestamp: bytes16("latest"),
-      isOptional: true,
       value: 10,
-      isSelectableByUser: true,
       claimType: ClaimType.EQ,
-      extraData: ""
+      isOptional: true,
+      isSelectableByUser: true
     });
 
     // setting requests in storage
+    // the frontend will query these requests
     _setAuths(authRequests);
     _setClaims(claimRequests);
   }
@@ -151,12 +117,15 @@ contract Airdrop is ERC20, SismoConnect {
     emit SignedMessageVerified(result.signedMessage);
   }
 
-  function getClaimRequests() external view returns (ClaimRequest[] memory) {
-    return _claimRequests;
-  }
-
-  function getAuthRequests() external view returns (AuthRequest[] memory) {
-    return _authRequests;
+  /**
+   * @dev Get the Sismo Connect request that was defined in the constructor
+   */
+  function getSismoConnectRequest()
+    external
+    view
+    returns (AuthRequest[] memory, ClaimRequest[] memory)
+  {
+    return (_authRequests, _claimRequests);
   }
 
   function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {

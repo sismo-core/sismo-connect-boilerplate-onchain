@@ -11,16 +11,6 @@
         "internalType": "string",
         "name": "symbol",
         "type": "string"
-      },
-      {
-        "internalType": "bytes16",
-        "name": "appId",
-        "type": "bytes16"
-      },
-      {
-        "internalType": "bool",
-        "name": "isImpersonationMode",
-        "type": "bool"
       }
     ],
     "stateMutability": "nonpayable",
@@ -387,7 +377,7 @@
   },
   {
     "inputs": [],
-    "name": "getAuthRequests",
+    "name": "getSismoConnectRequest",
     "outputs": [
       {
         "components": [
@@ -425,15 +415,7 @@
         "internalType": "struct AuthRequest[]",
         "name": "",
         "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getClaimRequests",
-    "outputs": [
+      },
       {
         "components": [
           {

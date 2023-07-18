@@ -1,7 +1,8 @@
-import { encodeAbiParameters } from "viem";
+import { decodeAbiParameters, encodeAbiParameters } from "viem";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
 import { AuthType, VerifiedAuth, VerifiedClaim } from "@/app/sismo-connect-config";
+import { AuthRequest, ClaimRequest } from "@sismo-core/sismo-connect-react";
 
 declare global {
   interface Window {
@@ -73,4 +74,32 @@ export function getUserIdFromHex(hexUserId: string) {
   } else {
     return hexUserId; // returns the original string if '00' is not found
   }
+}
+
+export function getAuthRequestsAndClaimRequestsFromSismoConnectRequest(
+  sismoConnectRequest: [AuthRequest[], ClaimRequest[]]
+): { authRequests: AuthRequest[]; claimRequests: ClaimRequest[] } {
+  const authRequests = (sismoConnectRequest[0] as AuthRequest[]).map((authRequest: AuthRequest) => {
+    return {
+      ...authRequest,
+      userId: authRequest.userId?.toString() ?? "0",
+    };
+  }) as AuthRequest[];
+  const claimRequests = (sismoConnectRequest[1] as ClaimRequest[]).map(
+    (claimRequest: ClaimRequest) => {
+      return {
+        ...claimRequest,
+        groupTimestamp:
+          (claimRequest.groupTimestamp as string) === "0x6c617465737400000000000000000000"
+            ? "latest"
+            : (decodeAbiParameters(
+                ["bytes16"],
+                claimRequest.groupTimestamp as `0x${string}`
+              )[0] as number),
+        value: parseInt(claimRequest.value?.toString() ?? "1"),
+      };
+    }
+  ) as ClaimRequest[];
+
+  return { authRequests, claimRequests };
 }

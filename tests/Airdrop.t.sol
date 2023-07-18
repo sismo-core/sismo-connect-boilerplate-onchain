@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "tests/base/BaseTest.t.sol";
-import "sismo-connect-solidity/SismoConnectLib.sol";
+import "sismo-connect-solidity/SismoLib.sol";
 import {Airdrop} from "src/Airdrop.sol";
 
 contract Airdroptest is BaseTest {
