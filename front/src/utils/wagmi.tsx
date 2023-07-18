@@ -1,6 +1,6 @@
 "use client";
 
-import '@rainbow-me/rainbowkit/styles.css';
+import "@rainbow-me/rainbowkit/styles.css";
 
 import { useEffect, useState } from "react";
 import {
@@ -20,6 +20,20 @@ import { Chain, configureChains, createConfig } from "wagmi";
 import { WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+
+export {
+  mainnet,
+  goerli,
+  sepolia,
+  optimism,
+  optimismGoerli,
+  arbitrum,
+  arbitrumGoerli,
+  scrollTestnet,
+  gnosis,
+  polygon,
+  polygonMumbai,
+};
 
 export const mumbaiFork = {
   id: 5151111,
@@ -72,7 +86,9 @@ export function WagmiProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={chains} modalSize="compact">{mounted && children}</RainbowKitProvider>
+      <RainbowKitProvider chains={chains} modalSize="compact">
+        {mounted && children}
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 }

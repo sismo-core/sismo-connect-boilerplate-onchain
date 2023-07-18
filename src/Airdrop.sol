@@ -2,27 +2,31 @@
 pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "forge-std/console.sol";
-import "sismo-connect-solidity/SismoLib.sol";
+import "forge-std/console2.sol";
+import "sismo-connect-solidity/SismoConnectLib.sol";
 
 /*
  * @title Airdrop
  * @author Sismo
  * @dev Simple Airdrop contract gated by Sismo Connect
- * Application requests multiple zk proofs (auths and claims) and verify them
- * The contract stores all verified results in storage
+ * Application requests multiple zk proofs (with auths and claims requests) and verify them
+ * The contract stores all requests and verified results in storage
  */
 contract Airdrop is ERC20, SismoConnect {
-  error AlreadyClaimed();
   event AuthVerified(VerifiedAuth verifiedAuth);
   event ClaimVerified(VerifiedClaim verifiedClaim);
   event SignedMessageVerified(bytes verifiedSignedMessage);
   using SismoConnectHelper for SismoConnectVerifiedResult;
-  mapping(uint256 => bool) public claimed;
 
-  // must correspond to requests defined in the app frontend
+  // appId of the Sismo Connect app
+  bytes16 private _appId = 0x32403ced4b65f2079eda77c84e7d2be6;
+  // allow proofs made from impersonating accounts to be verified
+  // it should be set to false for production
+  bool private _isImpersonationMode = true;
+
+  // these requests should be queried by the app frontend
   // Sismo Connect response's zk proofs will be checked against these requests.
-  // check Airdrop.s.sol to see how these requests are built and passed to the constructor
+  // check _setRequests function to see how these requests are built
   AuthRequest[] private _authRequests;
   ClaimRequest[] private _claimRequests;
 
@@ -33,43 +37,81 @@ contract Airdrop is ERC20, SismoConnect {
 
   constructor(
     string memory name,
-    string memory symbol,
-    bytes16 appId,
-    bool isImpersonationMode,
-    AuthRequest[] memory authRequests,
-    ClaimRequest[] memory claimRequests
-  ) ERC20(name, symbol) SismoConnect(buildConfig(appId, isImpersonationMode)) {
-    _setAuths(authRequests);
-    _setClaims(claimRequests);
+    string memory symbol
+  ) ERC20(name, symbol) SismoConnect(buildConfig(_appId, _isImpersonationMode)) {
+    // Defining requests that will be queried by the app frontend to allow users to generate a Sismo Connect response in their Sismo Vault
+    // The Sismo Connect Response holding the zk proofs will be checked against these requests in the claimWithSismo function below
+
+    // Request users to prove ownership of a Data Source (Wallet, Twitter, Github, Telegram, etc.)
+    AuthRequest[] memory authRequests = new AuthRequest[](3);
+    // Anonymous identifier of the vault for this app
+    // vaultId = hash(vaultSecret, appId).
+    // full docs: https://docs.sismo.io/sismo-docs/build-with-sismo-connect/technical-documentation/vault-and-proof-identifiers
+    authRequests[0] = buildAuth({authType: AuthType.VAULT});
+    // Request users to prove ownership of an EVM account
+    authRequests[1] = buildAuth({authType: AuthType.EVM_ACCOUNT});
+    // Request users to prove ownership of a Github account
+    // this request is optional
+    authRequests[2] = buildAuth({
+      authType: AuthType.GITHUB,
+      isOptional: true,
+      isSelectableByUser: true
+    });
+
+    // Request users to prove membership in a Data Group (e.g I own a wallet that is part of a DAO, owns an NFT, etc.)
+    ClaimRequest[] memory claimRequests = new ClaimRequest[](3);
+    // claim on Sismo Hub GitHub Contributors Data Group membership: https://factory.sismo.io/groups-explorer?search=0xda1c3726426d5639f4c6352c2c976b87
+    // Data Group members          = contributors to sismo-core/sismo-hub
+    // value for each group member = number of contributions
+    // request user to prove membership in the group
+    claimRequests[0] = buildClaim({groupId: bytes16(0xda1c3726426d5639f4c6352c2c976b87)});
+    // claim ENS DAO Voters Data Group membership: https://factory.sismo.io/groups-explorer?search=0x85c7ee90829de70d0d51f52336ea4722
+    // Data Group members          = voters in ENS DAO
+    // value for each group member = number of votes in ENS DAO
+    // request user to prove membership in the group with value >= 4
+    claimRequests[1] = buildClaim({groupId: bytes16(0x85c7ee90829de70d0d51f52336ea4722), value: 4});
+    // claim on Stand with Crypto NFT Minters Data Group membership: https://factory.sismo.io/groups-explorer?search=0xfae674b6cba3ff2f8ce2114defb200b1
+    // Data Group members          = minters of the Stand with Crypto NFT
+    // value for each group member = number of NFT minted
+    // request user to prove membership in the group with value = 10
+    claimRequests[2] = buildClaim({
+      groupId: bytes16(0xfae674b6cba3ff2f8ce2114defb200b1),
+      value: 10,
+      claimType: ClaimType.EQ,
+      isOptional: true,
+      isSelectableByUser: true
+    });
+
+    // storing auth and claim requests in storage
+    // the frontend will query the Sismo Connect request from the contract
+    _setSismoConnectRequest({auths: authRequests, claims: claimRequests});
   }
 
-  function claimWithSismo(bytes memory response) public {
+  /**
+   * @dev Claim the airdrop with a Sismo Connect response
+   * Sismo Connect response's zk proofs will be checked against the requests defined in the constructor above
+   * @param response Sismo Connect response
+   * @param to address to mint the airdrop to
+   */
+  function claimWithSismo(bytes memory response, address to) public {
     SismoConnectVerifiedResult memory result = verify({
       responseBytes: response,
       // checking response against requested auths
       auths: _authRequests,
       // checking response against requested claims
       claims: _claimRequests,
-      // checking response against requested message signature
-      signature: buildSignature({message: abi.encode(msg.sender)})
+      // checking response against a message signature
+      // the message is the address to mint the airdrop to
+      // this signature prevents front-running attacks
+      signature: buildSignature({message: abi.encode(to)})
     });
-
-    // it is the anonymous identifier of a user's vault for a specific app
-    // --> vaultId = hash(userVaultSecret, appId)
-    // used to avoid double claims
-    uint256 vaultId = result.getUserId(AuthType.VAULT);
-
-    // checking if the user has already claimed
-    if (claimed[vaultId]) {
-      revert AlreadyClaimed();
-    }
-
-    // marking that the user has claimed
-    claimed[vaultId] = true;
 
     // airdrop amount = number of verified proofs
     uint256 airdropAmount = (result.auths.length + result.claims.length) * 10 ** 18;
-    _mint(msg.sender, airdropAmount);
+    _mint(to, airdropAmount);
+
+    // remove previous verified results from the verification
+    _removePreviousVerifiedResults();
 
     // storing the result of the verification
     for (uint256 i = 0; i < result.auths.length; i++) {
@@ -80,21 +122,40 @@ contract Airdrop is ERC20, SismoConnect {
       _verifiedClaims.push(result.claims[i]);
       emit ClaimVerified(result.claims[i]);
     }
-    _verifiedSignedMessage =result.signedMessage;
+    _verifiedSignedMessage = result.signedMessage;
     emit SignedMessageVerified(result.signedMessage);
   }
 
-
-  function getVerifiedClaims() external view returns (VerifiedClaim[] memory) {
-    return _verifiedClaims;
+  /**
+   * @dev Get the Sismo Connect request that was defined in the constructor
+   */
+  function getSismoConnectRequest()
+    external
+    view
+    returns (AuthRequest[] memory, ClaimRequest[] memory)
+  {
+    return (_authRequests, _claimRequests);
   }
 
-  function getVerifiedAuths() external view returns (VerifiedAuth[] memory) {
-    return _verifiedAuths;
+  /**
+   * @dev Get the verified auths, claims and the verified signature that was verified in the claimWithSismo function
+   */
+  function getSismoConnectVerifiedResult()
+    external
+    view
+    returns (VerifiedAuth[] memory, VerifiedClaim[] memory, bytes memory)
+  {
+    return (_verifiedAuths, _verifiedClaims, _verifiedSignedMessage);
   }
 
-  function getVerifiedSignedMessage() external view returns (bytes memory) {
-    return _verifiedSignedMessage;
+  // helpers
+
+  function _setSismoConnectRequest(
+    AuthRequest[] memory auths,
+    ClaimRequest[] memory claims
+  ) private {
+    _setAuths(auths);
+    _setClaims(claims);
   }
 
   function _setAuths(AuthRequest[] memory auths) private {
@@ -109,4 +170,26 @@ contract Airdrop is ERC20, SismoConnect {
     }
   }
 
+  function _removePreviousVerifiedResults() private {
+    _cleanVerifiedAuths();
+    _cleanVerifiedClaims();
+  }
+
+  function _cleanVerifiedAuths() private {
+    uint256 verifiedAuthsLength = _verifiedAuths.length;
+    if (verifiedAuthsLength != 0) {
+      for (uint256 i = 0; i < verifiedAuthsLength; i++) {
+        _verifiedAuths.pop();
+      }
+    }
+  }
+
+  function _cleanVerifiedClaims() private {
+    uint256 verifiedClaimsLength = _verifiedClaims.length;
+    if (verifiedClaimsLength != 0) {
+      for (uint256 i = 0; i < verifiedClaimsLength; i++) {
+        _verifiedClaims.pop();
+      }
+    }
+  }
 }

@@ -1,29 +1,25 @@
 import { useEffect, useState } from "react";
-import { Chain, TransactionReceipt, formatEther } from "viem";
 import {
-  useAccount,
-  useContractWrite,
-  useNetwork,
-  usePrepareContractWrite,
-  useSwitchNetwork,
-} from "wagmi";
-import { waitForTransaction, readContract } from "@wagmi/core";
+  Chain,
+  GetContractReturnType,
+  PublicClient,
+  TransactionReceipt,
+  WalletClient,
+  getContract,
+} from "viem";
+import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
+import { waitForTransaction, getPublicClient } from "@wagmi/core";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
 import { formatError } from "./misc";
-import { VerifiedAuth, VerifiedClaim } from "@/app/sismo-connect-config";
 import { fundMyAccountOnLocalFork } from "./fundMyAccountOnLocalFork";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 
 export type ContractClaim = {
-  claimAirdrop: () => Promise<void>;
-  reset: () => void;
+  airdropContract: GetContractReturnType<typeof AirdropABI, PublicClient, WalletClient>;
+  switchNetworkAsync: ((chainId?: number | undefined) => Promise<Chain>) | undefined;
+  waitingForTransaction: (hash: `0x${string}`) => Promise<TransactionReceipt | undefined>;
   error: string;
-  amountClaimed: string;
-  pageState: string;
-  verifiedClaims: VerifiedClaim[] | undefined;
-  verifiedAuths: VerifiedAuth[] | undefined;
-  verifiedSignedMessage: string | undefined;
 };
 
 export default function useContract({
@@ -34,31 +30,20 @@ export default function useContract({
   chain: Chain;
 }): ContractClaim {
   const [error, setError] = useState<string>("");
-  const [pageState, setPageState] = useState<string>("init");
-  const [amountClaimed, setAmountClaimed] = useState<string>("");
-  const [verifiedClaims, setVerifiedClaims] = useState<VerifiedClaim[]>();
-  const [verifiedAuths, setVerifiedAuths] = useState<VerifiedAuth[]>();
-  const [verifiedSignedMessage, setVerifiedSignedMessage] = useState<string>();
   const { chain: currentChain } = useNetwork();
+  const { switchNetworkAsync } = useSwitchNetwork();
+  const publicClient = getPublicClient();
+  const { data: walletClient } = useWalletClient();
   const { isConnected, address } = useAccount({
     onConnect: async ({ address }) => address && (await fundMyAccountOnLocalFork(address)),
   });
-  const { switchNetworkAsync } = useSwitchNetwork();
-  const contractCallInputs = {
+
+  const airdropContract = getContract({
     address: transactions[0].contractAddress as `0x${string}`,
     abi: [...AirdropABI, ...errorsABI],
-    functionName: "claimWithSismo",
-    args: [responseBytes],
-    chain,
-    enabled: Boolean(responseBytes),
-  };
-  const { config, error: wagmiSimulateError } = usePrepareContractWrite(contractCallInputs);
-  const { writeAsync } = useContractWrite(config);
-
-  useEffect(() => {
-    if (!responseBytes) return;
-    setPageState("responseReceived");
-  }, [responseBytes]);
+    publicClient,
+    walletClient: walletClient as WalletClient,
+  });
 
   /* *************  Handle simulateContract call & chain errors ************ */
   useEffect(() => {
@@ -67,78 +52,45 @@ export default function useContract({
   }, [currentChain]);
 
   useEffect(() => {
-    if (!wagmiSimulateError) return;
     if (!isConnected) return;
-    return setError(formatError(wagmiSimulateError));
-  }, [wagmiSimulateError, isConnected]);
-
-  /* ************  Handle the airdrop claim button click ******************* */
-  async function claimAirdrop() {
-    if (!address) return;
-    setError("");
-    try {
-      if (currentChain?.id !== chain.id) await switchNetworkAsync?.(chain.id);
-      setPageState("confirmingTransaction");
-      const tx = await writeAsync?.();
-      setPageState("verifying");
-      let txReceipt: TransactionReceipt | undefined;
-      if (chain.id === 5151111) {
-        const timeout = new Promise((_, reject) =>
-          setTimeout(() => {
-            setPageState("responseReceived");
-            reject(
-              new Error(
-                "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
-              )
-            );
-          }, 10000)
-        );
-        const txReceiptPromise = tx && waitForTransaction({ hash: tx.hash });
-        const race = await Promise.race([txReceiptPromise, timeout]);
-        txReceipt = race as TransactionReceipt;
-      } else {
-        txReceipt = tx && (await waitForTransaction({ hash: tx.hash }));
+    if (!responseBytes) return;
+    async function simulate() {
+      try {
+        await airdropContract.simulate.claimWithSismo([responseBytes, address]);
+        await airdropContract.simulate.balanceOf([address]);
+      } catch (e: any) {
+        return setError(formatError(e));
       }
-      if (txReceipt?.status === "success") {
-        setAmountClaimed(
-          formatEther((await readAirdropContract("balanceOf", [address])) as unknown as bigint)
-        );
-        setVerifiedClaims((await readAirdropContract("getVerifiedClaims")) as VerifiedClaim[]);
-        setVerifiedAuths((await readAirdropContract("getVerifiedAuths")) as VerifiedAuth[]);
-        setVerifiedSignedMessage((await readAirdropContract("getVerifiedSignedMessage")) as string);
-        setPageState("verified");
-      }
-    } catch (e: any) {
-      setError(formatError(e));
     }
-  }
 
-  const readAirdropContract = async (functionName: string, args?: string[]) => {
-    return readContract({
-      address: transactions[0].contractAddress as `0x${string}}`,
-      abi: AirdropABI,
-      functionName,
-      args: args || [],
-    });
-  };
+    simulate();
+  }, [address, isConnected, responseBytes]);
 
-  function reset() {
-    setAmountClaimed("");
-    setError("");
-    setPageState("init");
-    const url = new URL(window.location.href);
-    url.searchParams.delete("sismoConnectResponseCompressed");
-    window.history.replaceState({}, "", url.toString());
+  async function waitingForTransaction(
+    hash: `0x${string}`
+  ): Promise<TransactionReceipt | undefined> {
+    let txReceipt: TransactionReceipt | undefined;
+    if (chain.id === 5151111) {
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => {
+          setError(
+            "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
+          );
+        }, 10000)
+      );
+      const txReceiptPromise = hash && waitForTransaction({ hash: hash });
+      const race = await Promise.race([txReceiptPromise, timeout]);
+      txReceipt = race as TransactionReceipt;
+    } else {
+      txReceipt = hash && (await waitForTransaction({ hash: hash }));
+    }
+    return txReceipt;
   }
 
   return {
-    claimAirdrop,
-    reset,
+    airdropContract,
+    switchNetworkAsync,
+    waitingForTransaction,
     error,
-    pageState,
-    amountClaimed,
-    verifiedClaims,
-    verifiedAuths,
-    verifiedSignedMessage,
   };
 }

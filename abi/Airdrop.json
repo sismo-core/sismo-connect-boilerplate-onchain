@@ -11,115 +11,10 @@
         "internalType": "string",
         "name": "symbol",
         "type": "string"
-      },
-      {
-        "internalType": "bytes16",
-        "name": "appId",
-        "type": "bytes16"
-      },
-      {
-        "internalType": "bool",
-        "name": "isImpersonationMode",
-        "type": "bool"
-      },
-      {
-        "components": [
-          {
-            "internalType": "enum AuthType",
-            "name": "authType",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint256",
-            "name": "userId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "isAnon",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isOptional",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct AuthRequest[]",
-        "name": "authRequests",
-        "type": "tuple[]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "enum ClaimType",
-            "name": "claimType",
-            "type": "uint8"
-          },
-          {
-            "internalType": "bytes16",
-            "name": "groupId",
-            "type": "bytes16"
-          },
-          {
-            "internalType": "bytes16",
-            "name": "groupTimestamp",
-            "type": "bytes16"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "isOptional",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isSelectableByUser",
-            "type": "bool"
-          },
-          {
-            "internalType": "bytes",
-            "name": "extraData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct ClaimRequest[]",
-        "name": "claimRequests",
-        "type": "tuple[]"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "AlreadyClaimed",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum AuthType",
-        "name": "authType",
-        "type": "uint8"
-      }
-    ],
-    "name": "AuthTypeNotFoundInVerifiedResult",
-    "type": "error"
   },
   {
     "anonymous": false,
@@ -399,30 +294,16 @@
         "internalType": "bytes",
         "name": "response",
         "type": "bytes"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
       }
     ],
     "name": "claimWithSismo",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimed",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -496,7 +377,94 @@
   },
   {
     "inputs": [],
-    "name": "getVerifiedAuths",
+    "name": "getSismoConnectRequest",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "enum AuthType",
+            "name": "authType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isAnon",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct AuthRequest[]",
+        "name": "",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "enum ClaimType",
+            "name": "claimType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupId",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "bytes16",
+            "name": "groupTimestamp",
+            "type": "bytes16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isOptional",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSelectableByUser",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes",
+            "name": "extraData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct ClaimRequest[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getSismoConnectVerifiedResult",
     "outputs": [
       {
         "components": [
@@ -529,15 +497,7 @@
         "internalType": "struct VerifiedAuth[]",
         "name": "",
         "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVerifiedClaims",
-    "outputs": [
+      },
       {
         "components": [
           {
@@ -579,15 +539,7 @@
         "internalType": "struct VerifiedClaim[]",
         "name": "",
         "type": "tuple[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVerifiedSignedMessage",
-    "outputs": [
+      },
       {
         "internalType": "bytes",
         "name": "",
