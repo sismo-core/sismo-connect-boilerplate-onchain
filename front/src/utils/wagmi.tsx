@@ -21,6 +21,20 @@ import { WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
+export {
+  mainnet,
+  goerli,
+  sepolia,
+  optimism,
+  optimismGoerli,
+  arbitrum,
+  arbitrumGoerli,
+  scrollTestnet,
+  gnosis,
+  polygon,
+  polygonMumbai,
+};
+
 export const mumbaiFork = {
   id: 5151111,
   name: "Local Fork Mumbai",

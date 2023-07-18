@@ -1,8 +1,13 @@
 import { decodeAbiParameters, encodeAbiParameters } from "viem";
 import { abi as AirdropABI } from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
-import { AuthType, VerifiedAuth, VerifiedClaim } from "@/app/sismo-connect-config";
-import { AuthRequest, ClaimRequest } from "@sismo-core/sismo-connect-react";
+import {
+  AuthRequest,
+  AuthType,
+  ClaimRequest,
+  VerifiedAuth,
+  VerifiedClaim,
+} from "@sismo-core/sismo-connect-react";
 
 declare global {
   interface Window {
