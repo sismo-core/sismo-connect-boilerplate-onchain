@@ -16,25 +16,30 @@ const Header: React.FC = () => {
         the frontend <br />
         3. The frontend forwards the response to ERC20 smart contract via claimWithSismo function{" "}
         <br />
-        4. The smart contract verifies the proofs contained in the response and stores
-        verified claims and auths <br />
+        4. The smart contract verifies the proofs contained in the response and stores verified
+        claims and auths <br />
         5. The frontend reads the verified claims and auths from the contract and displays them
       </p>
       <div>
         <p>
-          <b className="code-snippet">front/src/app/page.tsx</b>: Frontend - Integrate Sismo Connect Button and make Sismo Connect request
+          <b className="code-snippet">front/src/app/page.tsx</b>: Frontend - Integrate Sismo Connect
+          Button and make Sismo Connect request
         </p>
         <p>
-          <b className="code-snippet">front/src/app/sismo-connect-config.ts</b>: Sismo Connect configuration and requests
+          <b className="code-snippet">front/src/app/sismo-connect-config.ts</b>: Sismo Connect
+          configuration and requests
         </p>
         <p>
-          <b className="code-snippet">src/Airdrop.sol</b>: Contract - verifies Sismo Connect response and stores verified claims, auths and signed message
+          <b className="code-snippet">src/Airdrop.sol</b>: Contract - verifies Sismo Connect
+          response and stores verified claims, auths and signed message
         </p>
         <p className="callout">
           {" "}
           Notes: <br />
-          1. You should exactly the same Configuration (AppId and impersonation), AuthRequests and ClaimsRequests in the frontend and in your contract <br />
-          2. If you are using metamask and transactions hang. Go to settings > advanced > clear activity and nonce data <br />
+          1. You should exactly have the same Configuration (AppId and impersonation), AuthRequests
+          and ClaimsRequests in the frontend and in your contract <br />
+          2. If you are using metamask and transactions hang. Go to settings &gt; advanced &gt;
+          clear activity and nonce data <br />
           3. First ZK Proof generation takes longer time, especially with bad internet as there is a
           zkey file to download once in the data vault connection <br />
           4. The more proofs you request, the longer it takes to generate them (about 2 secs per

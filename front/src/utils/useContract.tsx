@@ -77,11 +77,15 @@ export default function useContract({
     let txReceipt: TransactionReceipt | undefined;
     if (chain.id === 5151111) {
       const timeout = new Promise((_, reject) =>
-        setTimeout(() => {
-          setError(
-            "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
-          );
-        }, 10000)
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Transaction timed-out: If you are running a local fork on Anvil please make sure to reset your wallet nonce. In metamask:  Go to settings > advanced > clear activity and nonce data"
+              )
+            ),
+          10000
+        )
       );
       const txReceiptPromise = hash && waitForTransaction({ hash: hash });
       const race = await Promise.race([txReceiptPromise, timeout]);

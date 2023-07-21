@@ -110,7 +110,12 @@ export default function Home() {
     } catch (e: any) {
       setClaimError(formatError(e));
     } finally {
-      setPageState("responseReceived");
+      setPageState((prev) => {
+        if (prev === "verified") {
+          return "verified";
+        }
+        return "responseReceived";
+      });
     }
   }
 
