@@ -42,7 +42,6 @@ import {
 } from "@sismo-core/sismo-connect-react";
 import { AUTHS, CLAIMS, CONFIG } from "@/app/sismo-connect-config";
 
-
 /* ********************  Defines the chain to use *************************** */
 const CHAIN = mumbaiFork;
 
@@ -79,7 +78,7 @@ export default function Home() {
   function resetApp() {
     setPageState("init");
     setSismoConnectVerifiedResult(null);
-    setClaimError("");
+    setClaimError(null);
     const url = new URL(window.location.href);
     url.searchParams.delete("sismoConnectResponseCompressed");
     window.history.replaceState({}, "", url.toString());
@@ -139,7 +138,7 @@ export default function Home() {
                 <b>Your airdrop destination address is: {address}</b>
               </p>
             </>
-            {pageState == "init" && (
+            {pageState == "init" && !claimError && (
               <>
                 <SismoConnectButton
                   config={CONFIG}
