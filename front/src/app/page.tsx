@@ -184,6 +184,14 @@ export default function Home() {
                     dev" command and try again, it will automatically deploy a new contract for you!
                   </p>
                 )}
+                {claimError.includes("RegistryRootNotAvailable") && (
+                  <p style={{ color: "#0BDA51" }}>
+                    If you are developing on a local fork, you should restart your local chain and
+                    your frontend. Your fork needs to be updated with the latest registry root sent
+                    on chain. In metamask, go to "settings" &gt; "advanced" &gt; "clear activity and
+                    nonce data" to not encounter nonce errors after restart.
+                  </p>
+                )}
                 {claimError.slice(0, 16) === "Please switch to" && (
                   <button onClick={() => switchNetworkAsync?.(CHAIN.id)}>Switch chain</button>
                 )}
