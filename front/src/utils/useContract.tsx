@@ -47,13 +47,18 @@ export default function useContract({
 
   /* *************  Handle simulateContract call & chain errors ************ */
   useEffect(() => {
-    if (currentChain?.id !== chain.id) return setError(`Please switch to ${chain.name} network`);
+    if (currentChain?.id !== chain.id) {
+      return setError(`Please switch to ${chain.name} network`);
+    }
     setError("");
   }, [currentChain]);
 
   useEffect(() => {
     if (!isConnected) return;
     if (!responseBytes) return;
+    if (currentChain?.id !== chain.id) {
+      return setError(`Please switch to ${chain.name} network`);
+    }
     async function simulate() {
       try {
         await airdropContract.simulate.claimWithSismo([responseBytes, address]);
@@ -64,7 +69,7 @@ export default function useContract({
     }
 
     simulate();
-  }, [address, isConnected, responseBytes]);
+  }, [address, isConnected, responseBytes, currentChain]);
 
   async function waitingForTransaction(
     hash: `0x${string}`

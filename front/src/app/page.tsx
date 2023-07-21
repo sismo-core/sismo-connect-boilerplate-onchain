@@ -65,9 +65,6 @@ export default function Home() {
     chain: CHAIN,
   });
 
-  // Get the SismoConnectConfig and Sismo Connect Request from the contract
-  // Set react state accordingly to display the Sismo Connect Button
-
   useEffect(() => {
     setClaimError(error);
     if (!responseBytes) return;
@@ -88,7 +85,6 @@ export default function Home() {
   /* ************  Handle the airdrop claim button click ******************* */
   async function claimAirdrop() {
     if (!address) return;
-    setClaimError("");
     try {
       if (chain?.id !== CHAIN.id) await switchNetworkAsync?.(CHAIN.id);
       setPageState("confirmingTransaction");
@@ -159,7 +155,7 @@ export default function Home() {
                 />
               </>
             )}
-            {claimError !== null && (
+            {!claimError && (
               <div className="status-wrapper">
                 {pageState == "responseReceived" && (
                   <button onClick={() => claimAirdrop()}>{"Claim"}</button>
@@ -179,8 +175,8 @@ export default function Home() {
                 {claimError.slice(0, 50) ===
                   'The contract function "balanceOf" returned no data' && (
                   <p style={{ color: "#0BDA51" }}>
-                    Please restart your frontend with "yarn dev" command and try again, it will
-                    automatically deploy a new contract for you!
+                    If you are developing on a local fork, please restart your frontend with "yarn
+                    dev" command and try again, it will automatically deploy a new contract for you!
                   </p>
                 )}
                 {claimError.slice(0, 16) === "Please switch to" && (
