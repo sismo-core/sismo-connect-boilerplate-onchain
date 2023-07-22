@@ -73,13 +73,7 @@ export default function Home() {
 
   /* *************************  Reset state **************************** */
   function resetApp() {
-    setPageState("init");
-    setSismoConnectVerifiedResult(null);
-    setClaimError(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("sismoConnectResponseCompressed");
-    window.history.replaceState({}, "", url.toString());
-    setResponseBytes("");
+    window.location.href = "/";
   }
 
   /* ************  Handle the airdrop claim button click ******************* */
