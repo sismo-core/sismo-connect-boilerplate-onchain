@@ -5,17 +5,11 @@ const { readFileSync } = require("fs");
 const { spawnSync } = require("child_process");
 const fetchHubExports = require("./fetch-hub");
 
-// on Mumbai
-const availableRootsRegistryContractAddress = "0x51B3ec080D1459232dbea86B751F75b5204a4abC";
-
 const registerRoot = (root: string) => {
   const registerRootScriptPath = fetchHubExports.path.join(__dirname, "register-root.sh");
-  const child = spawnSync(
-    `${registerRootScriptPath} ${availableRootsRegistryContractAddress} ${root}`,
-    {
-      shell: true,
-    }
-  );
+  const child = spawnSync(`${registerRootScriptPath} ${root}`, {
+    shell: true,
+  });
 
   if (child.status !== 0) {
     console.error(child.stderr.toString());
