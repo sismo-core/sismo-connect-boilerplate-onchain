@@ -9,14 +9,16 @@ import {
 } from "viem";
 import { useAccount, useNetwork, useSwitchNetwork, useWalletClient } from "wagmi";
 import { waitForTransaction, getPublicClient } from "@wagmi/core";
-import { abi as AirdropABI } from "../../../abi/Airdrop.json";
+import Airdrop from "../../../abi/Airdrop.json";
 import { errorsABI } from "./errorsABI";
 import { formatError } from "./misc";
 import { fundMyAccountOnLocalFork } from "./fundMyAccountOnLocalFork";
 import { transactions } from "../../../broadcast/Airdrop.s.sol/5151111/run-latest.json";
 
+export const airdropABI = [...Airdrop.abi, ...errorsABI] as const;
+
 export type ContractClaim = {
-  airdropContract: GetContractReturnType<typeof AirdropABI, PublicClient, WalletClient>;
+  airdropContract: GetContractReturnType<typeof airdropABI, PublicClient, WalletClient>;
   switchNetworkAsync: ((chainId?: number | undefined) => Promise<Chain>) | undefined;
   waitingForTransaction: (hash: `0x${string}`) => Promise<TransactionReceipt | undefined>;
   error: string;
@@ -40,7 +42,7 @@ export default function useContract({
 
   const airdropContract = getContract({
     address: transactions[0].contractAddress as `0x${string}`,
-    abi: [...AirdropABI, ...errorsABI],
+    abi: airdropABI,
     publicClient,
     walletClient: walletClient as WalletClient,
   });

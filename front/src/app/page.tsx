@@ -7,7 +7,6 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { formatEther } from "viem";
 import {
   formatError,
-  getAuthRequestsAndClaimRequestsFromSismoConnectRequest,
   getProofDataForAuth,
   getProofDataForClaim,
   getUserIdFromHex,
