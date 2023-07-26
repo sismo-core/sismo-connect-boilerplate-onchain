@@ -1,6 +1,4 @@
 import { decodeAbiParameters, encodeAbiParameters } from "viem";
-import { abi as AirdropABI } from "../../../abi/Airdrop.json";
-import { errorsABI } from "./errorsABI";
 import {
   AuthRequest,
   AuthType,
@@ -18,10 +16,6 @@ declare global {
 export function removeDashAndCapitalizeFirstLetter(str: string) {
   return str.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
-
-export const baseContractInputs = {
-  abi: [...AirdropABI, ...errorsABI],
-};
 
 export const signMessage = (address: `0x${string}`) => {
   if (!address) return "";

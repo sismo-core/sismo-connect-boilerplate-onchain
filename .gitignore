@@ -12,6 +12,7 @@
 /.next
 /front/.next/
 /out/
+/front/script/register-root/latest-root.txt
 
 # production
 /build

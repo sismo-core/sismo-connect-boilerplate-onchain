@@ -7,7 +7,6 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { formatEther } from "viem";
 import {
   formatError,
-  getAuthRequestsAndClaimRequestsFromSismoConnectRequest,
   getProofDataForAuth,
   getProofDataForClaim,
   getUserIdFromHex,
@@ -65,9 +64,6 @@ export default function Home() {
     chain: CHAIN,
   });
 
-  // Get the SismoConnectConfig and Sismo Connect Request from the contract
-  // Set react state accordingly to display the Sismo Connect Button
-
   useEffect(() => {
     setClaimError(error);
     if (!responseBytes) return;
@@ -76,19 +72,12 @@ export default function Home() {
 
   /* *************************  Reset state **************************** */
   function resetApp() {
-    setPageState("init");
-    setSismoConnectVerifiedResult(null);
-    setClaimError(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("sismoConnectResponseCompressed");
-    window.history.replaceState({}, "", url.toString());
-    setResponseBytes("");
+    window.location.href = "/";
   }
 
   /* ************  Handle the airdrop claim button click ******************* */
   async function claimAirdrop() {
     if (!address) return;
-    setClaimError("");
     try {
       if (chain?.id !== CHAIN.id) await switchNetworkAsync?.(CHAIN.id);
       setPageState("confirmingTransaction");
@@ -114,7 +103,12 @@ export default function Home() {
     } catch (e: any) {
       setClaimError(formatError(e));
     } finally {
-      setPageState("responseReceived");
+      setPageState((prev) => {
+        if (prev === "verified") {
+          return "verified";
+        }
+        return "responseReceived";
+      });
     }
   }
 
@@ -159,7 +153,7 @@ export default function Home() {
                 />
               </>
             )}
-            {claimError !== null && (
+            {!claimError && (
               <div className="status-wrapper">
                 {pageState == "responseReceived" && (
                   <button onClick={() => claimAirdrop()}>{"Claim"}</button>
@@ -179,8 +173,16 @@ export default function Home() {
                 {claimError.slice(0, 50) ===
                   'The contract function "balanceOf" returned no data' && (
                   <p style={{ color: "#0BDA51" }}>
-                    Please restart your frontend with "yarn dev" command and try again, it will
-                    automatically deploy a new contract for you!
+                    If you are developing on a local fork, please restart your frontend with "yarn
+                    dev" command and try again, it will automatically deploy a new contract for you!
+                  </p>
+                )}
+                {claimError.includes("RegistryRootNotAvailable") && (
+                  <p style={{ color: "#0BDA51" }}>
+                    If you are developing on a local fork, you should restart your local chain and
+                    your frontend. Your fork needs to be updated with the latest registry root sent
+                    on chain. In metamask, go to "settings" &gt; "advanced" &gt; "clear activity and
+                    nonce data" to not encounter nonce errors after restart.
                   </p>
                 )}
                 {claimError.slice(0, 16) === "Please switch to" && (
