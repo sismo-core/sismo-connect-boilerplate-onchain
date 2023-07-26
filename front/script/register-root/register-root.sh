@@ -1,6 +1,6 @@
 #!/bin/bash
 
-lastRootOnGnosis=$1
+lastRoot=$1
 
 # remove 0x prefix and leading zeros on a hex string
 remove_zeros() {
@@ -19,4 +19,4 @@ rootsRegistryContractOwner=0x$(echo $(cast call $availableRootsRegistryContractA
 cast rpc anvil_impersonateAccount $rootsRegistryContractOwner
 
 # register the root
-cast send $availableRootsRegistryContractAddress 'registerRoot(uint256)' $lastRootOnGnosis --from $rootsRegistryContractOwner --unlocked
+cast send $availableRootsRegistryContractAddress 'registerRoot(uint256)' $lastRoot --from $rootsRegistryContractOwner --unlocked

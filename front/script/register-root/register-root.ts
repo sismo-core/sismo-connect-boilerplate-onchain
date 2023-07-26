@@ -1,6 +1,3 @@
-// Script used to fetch the latest root sent on Gnosis
-// and register it in the local fork chain
-
 const { readFileSync } = require("fs");
 const { spawnSync } = require("child_process");
 const fetchHubExports = require("./fetch-hub");
@@ -20,7 +17,7 @@ const registerRoot = (root: string) => {
 };
 
 const main = async () => {
-  const root = readFileSync(fetchHubExports.latestRootFilePath, "utf-8") as string;
+  let root = fetchHubExports.getLatestRoot();
   console.log(`Registering root ${root} on the local fork...`);
   registerRoot(root === "" ? "0x" : root);
 };
