@@ -15,7 +15,9 @@ import {
   gnosis,
   polygon,
   polygonMumbai,
-} from "viem/chains";
+  base,
+  baseGoerli,
+} from "wagmi/chains";
 import { Chain, configureChains, createConfig } from "wagmi";
 import { WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
@@ -33,6 +35,8 @@ export {
   gnosis,
   polygon,
   polygonMumbai,
+  base,
+  baseGoerli,
 };
 
 export const mumbaiFork = {
@@ -64,6 +68,8 @@ const { chains, publicClient } = configureChains(
     gnosis,
     polygon,
     polygonMumbai,
+    base,
+    baseGoerli,
   ],
   [publicProvider()]
 );
