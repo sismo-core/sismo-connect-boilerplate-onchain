@@ -27,6 +27,8 @@ import {
   gnosis,
   polygon,
   polygonMumbai,
+  base,
+  baseGoerli,
 } from "@/utils";
 import {
   AuthRequest,
@@ -277,7 +279,7 @@ export default function Home() {
                         {getProofDataForAuth(
                           sismoConnectVerifiedResult?.verifiedAuths,
                           auth.authType
-                        )!.toString()}
+                        )?.toString()}
                       </td>
                     ) : (
                       <td> ZK proof not generated yet </td>
@@ -317,14 +319,12 @@ export default function Home() {
                     <td>{claim.isOptional ? "optional" : "required"}</td>
                     {sismoConnectVerifiedResult?.verifiedClaims ? (
                       <td>
-                        {
-                          getProofDataForClaim(
-                            sismoConnectVerifiedResult.verifiedClaims!,
-                            claim.claimType || 0,
-                            claim.groupId!,
-                            claim.value || 1
-                          )!
-                        }
+                        {getProofDataForClaim(
+                          sismoConnectVerifiedResult.verifiedClaims!,
+                          claim.claimType || 0,
+                          claim.groupId!,
+                          claim.value || 1
+                        )?.toString()}
                       </td>
                     ) : (
                       <td> ZK proof not generated yet </td>
